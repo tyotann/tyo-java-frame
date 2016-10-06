@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ihidea.component.oauth2.dao.OauthProductMapper" >
+  <resultMap id="BaseResultMap" type="com.ihidea.component.oauth2.dao.model.OauthProduct" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="APP_KEY" property="appKey" jdbcType="VARCHAR" />
+    <result column="APP_SECRET" property="appSecret" jdbcType="VARCHAR" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="CREATE_ACCOUNT" property="createAccount" jdbcType="VARCHAR" />
+    <result column="MODIFY_DATE" property="modifyDate" jdbcType="TIMESTAMP" />
+    <result column="MODIFY_ACCOUNT" property="modifyAccount" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    ID, APP_KEY, APP_SECRET, NAME, STATUS, CREATE_DATE, CREATE_ACCOUNT, MODIFY_DATE, 
+    MODIFY_ACCOUNT
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.ihidea.component.oauth2.dao.model.OauthProductCriteria" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from OAUTH_PRODUCT
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from OAUTH_PRODUCT
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from OAUTH_PRODUCT
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.ihidea.component.oauth2.dao.model.OauthProductCriteria" >
+    delete from OAUTH_PRODUCT
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.ihidea.component.oauth2.dao.model.OauthProduct" >
+    insert into OAUTH_PRODUCT (ID, APP_KEY, APP_SECRET, 
+      NAME, STATUS, CREATE_DATE, 
+      CREATE_ACCOUNT, MODIFY_DATE, MODIFY_ACCOUNT
+      )
+    values (#{id,jdbcType=VARCHAR}, #{appKey,jdbcType=VARCHAR}, #{appSecret,jdbcType=VARCHAR}, 
+      #{name,jdbcType=VARCHAR}, #{status,jdbcType=DECIMAL}, #{createDate,jdbcType=TIMESTAMP}, 
+      #{createAccount,jdbcType=VARCHAR}, #{modifyDate,jdbcType=TIMESTAMP}, #{modifyAccount,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.ihidea.component.oauth2.dao.model.OauthProduct" >
+    insert into OAUTH_PRODUCT
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="appKey != null" >
+        APP_KEY,
+      </if>
+      <if test="appSecret != null" >
+        APP_SECRET,
+      </if>
+      <if test="name != null" >
+        NAME,
+      </if>
+      <if test="status != null" >
+        STATUS,
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE,
+      </if>
+      <if test="createAccount != null" >
+        CREATE_ACCOUNT,
+      </if>
+      <if test="modifyDate != null" >
+        MODIFY_DATE,
+      </if>
+      <if test="modifyAccount != null" >
+        MODIFY_ACCOUNT,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="appKey != null" >
+        #{appKey,jdbcType=VARCHAR},
+      </if>
+      <if test="appSecret != null" >
+        #{appSecret,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createAccount != null" >
+        #{createAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyDate != null" >
+        #{modifyDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyAccount != null" >
+        #{modifyAccount,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.ihidea.component.oauth2.dao.model.OauthProductCriteria" resultType="java.lang.Integer" >
+    select count(*) from OAUTH_PRODUCT
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update OAUTH_PRODUCT
+    <set >
+      <if test="record.id != null" >
+        ID = #{record.id,jdbcType=VARCHAR},
+      </if>
+      <if test="record.appKey != null" >
+        APP_KEY = #{record.appKey,jdbcType=VARCHAR},
+      </if>
+      <if test="record.appSecret != null" >
+        APP_SECRET = #{record.appSecret,jdbcType=VARCHAR},
+      </if>
+      <if test="record.name != null" >
+        NAME = #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.status != null" >
+        STATUS = #{record.status,jdbcType=DECIMAL},
+      </if>
+      <if test="record.createDate != null" >
+        CREATE_DATE = #{record.createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.createAccount != null" >
+        CREATE_ACCOUNT = #{record.createAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="record.modifyDate != null" >
+        MODIFY_DATE = #{record.modifyDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.modifyAccount != null" >
+        MODIFY_ACCOUNT = #{record.modifyAccount,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update OAUTH_PRODUCT
+    set ID = #{record.id,jdbcType=VARCHAR},
+      APP_KEY = #{record.appKey,jdbcType=VARCHAR},
+      APP_SECRET = #{record.appSecret,jdbcType=VARCHAR},
+      NAME = #{record.name,jdbcType=VARCHAR},
+      STATUS = #{record.status,jdbcType=DECIMAL},
+      CREATE_DATE = #{record.createDate,jdbcType=TIMESTAMP},
+      CREATE_ACCOUNT = #{record.createAccount,jdbcType=VARCHAR},
+      MODIFY_DATE = #{record.modifyDate,jdbcType=TIMESTAMP},
+      MODIFY_ACCOUNT = #{record.modifyAccount,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.ihidea.component.oauth2.dao.model.OauthProduct" >
+    update OAUTH_PRODUCT
+    <set >
+      <if test="appKey != null" >
+        APP_KEY = #{appKey,jdbcType=VARCHAR},
+      </if>
+      <if test="appSecret != null" >
+        APP_SECRET = #{appSecret,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null" >
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createAccount != null" >
+        CREATE_ACCOUNT = #{createAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyDate != null" >
+        MODIFY_DATE = #{modifyDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyAccount != null" >
+        MODIFY_ACCOUNT = #{modifyAccount,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.ihidea.component.oauth2.dao.model.OauthProduct" >
+    update OAUTH_PRODUCT
+    set APP_KEY = #{appKey,jdbcType=VARCHAR},
+      APP_SECRET = #{appSecret,jdbcType=VARCHAR},
+      NAME = #{name,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=DECIMAL},
+      CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      CREATE_ACCOUNT = #{createAccount,jdbcType=VARCHAR},
+      MODIFY_DATE = #{modifyDate,jdbcType=TIMESTAMP},
+      MODIFY_ACCOUNT = #{modifyAccount,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

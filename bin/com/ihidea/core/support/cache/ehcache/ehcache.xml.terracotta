@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="false"
+	monitoring="autodetect">
+
+	<diskStore path="java.io.tmpdir/ehcache" />
+	
+	<!--terracotta服务器配置,默认端口为9510,多个服务器用,分隔  -->
+	<terracottaConfig url="test.iappk.com:9510"/>
+	
+	<!-- 默认缓存 -->
+	<!-- eternal： 设定缓存的elements是否永远不过期。如果为true，则缓存的数据始终有效，如果为false那么还要根据timeToIdleSeconds，timeToLiveSeconds判断 -->
+	<!-- maxElementsInMemory： 在内存中缓存的element的最大数目 -->
+	<!-- maxElementsOnDisk： 在磁盘上缓存的element的最大数目，默认值为0，表示不限制 -->
+	<!-- overflowToDisk： 如果内存中数据超过内存限制，是否要缓存到磁盘上 -->
+	
+	<!-- 可选属性 -->
+	<!-- timeToIdleSeconds： 对象空闲时间，指对象在多长时间没有被访问就会失效。只对eternal为false的有效。默认值0，表示一直可以访问 -->
+	<!-- timeToLiveSeconds： 对象存活时间，指对象从创建到失效所需要的时间。只对eternal为false的有效。默认值0，表示一直可以访问 -->
+	<!-- diskPersistent： 是否在磁盘上持久化。指重启jvm后，数据是否有效。默认为false -->
+	<!-- diskExpiryThreadIntervalSeconds： 对象检测线程运行时间间隔。标识对象状态的线程多长时间运行一次 -->
+	<!-- diskSpoolBufferSizeMB： DiskStore使用的磁盘大小，默认值30MB。每个cache使用各自的DiskStore -->
+	<!-- memoryStoreEvictionPolicy： 如果内存中数据超过内存限制，向磁盘缓存时的策略。默认值LRU，可选FIFO、LFU -->
+	
+	<!-- 集群属性 -->
+	<!-- replicatePuts=true | false – 当一个新元素增加到缓存中的时候是否要复制到其他的peers. 默认是true。 -->
+	<!-- replicateUpdates=true | false – 当一个已经在缓存中存在的元素被覆盖时是否要进行复制。默认是true。 -->
+	<!-- replicateRemovals= true | false – 当元素移除的时候是否进行复制。默认是true。 -->
+	<!-- replicateAsynchronously=true | false – 复制方式是异步的（指定为true时）还是同步的（指定为false时）。默认是true。 -->
+	<!-- replicatePutsViaCopy=true | false – 当一个新增元素被拷贝到其他的cache中时是否进行复制指定为true时为复制，默认是true。 -->
+	<!-- replicateUpdatesViaCopy=true | false – 当一个元素被拷贝到其他的cache中时是否进行复制（指定为true时为复制），默认是true。 -->
+	<defaultCache eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="0" maxElementsInMemory="10000"  maxElementsOnDisk="0" 
+		overflowToDisk="true" diskPersistent="false"  memoryStoreEvictionPolicy="LRU"/> 
+	
+	<!-- 系统框架使用cache,不刷新,本地内存操作 -->
+	<cache name="frameCache" eternal="true" maxElementsInMemory="10000" overflowToDisk="false" memoryStoreEvictionPolicy="LRU"/>
+	
+	<!-- 重复提交使用的cache,cache存活时间为10min,本地内存 -->
+	<cache name="retryInvokeCache" eternal="false" timeToLiveSeconds="600" maxElementsInMemory="10000"  overflowToDisk="false" 
+		memoryStoreEvictionPolicy="LRU"/>
+		
+	<!-- html设计器使用cache,不刷新,本地内存 -->
+	<cache name="htmlDesignCache" eternal="true" maxElementsInMemory="10000" overflowToDisk="false" memoryStoreEvictionPolicy="LRU"/>
+
+	<!-- 树的cache,不刷新,本地内存 -->
+	<cache name="treeCache" eternal="true" maxElementsInMemory="10000" overflowToDisk="false" memoryStoreEvictionPolicy="LRU"/>
+	
+	<!-- 系统图片缓存设置,永不过期,本地 -->
+	<cache name="imageCache" eternal="true"  maxElementsInMemory="100" maxElementsOnDisk="999" overflowToDisk="true" 
+		diskPersistent="false" diskExpiryThreadIntervalSeconds="120" diskSpoolBufferSizeMB="2048" memoryStoreEvictionPolicy="LRU"/>
+		
+		
+	<!--  集群缓存 -->
+	<!-- 系统accessToken缓存设置,30min缓存过期,oauth使用,集群内存 -->
+	<cache name="accessTokenCache" maxElementsInMemory="3000"
+		eternal="false" timeToLiveSeconds="3600" overflowToDisk="false" >
+		<terracotta/>
+	</cache>
+
+	<!-- 手机端校验码cache,cache存活时间为30min,集群内存 -->
+	<cache name="mobileJcaptchaCache" maxElementsInMemory="3000"
+		eternal="false" timeToLiveSeconds="1800" overflowToDisk="false" >
+		<terracotta/>
+	</cache>
+
+	<!-- 重置密码缓存,cache存活时间为10小时,集群内存 -->
+	<cache name="passwordResetCache" maxElementsInMemory="3000"
+		eternal="false" timeToLiveSeconds="36000" overflowToDisk="false" >
+		<terracotta/>
+	</cache>
+
+</ehcache>

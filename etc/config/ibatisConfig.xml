@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<settings>
+
+		<!-- http://my.oschina.net/liangbo/blog/269242 <setting name="cacheEnabled" 
+			value="true" /> <setting name="lazyLoadingEnabled" value="true" /> <setting 
+			name="multipleResultSetsEnabled" value="true" /> <setting name="useColumnLabel" 
+			value="true" /> <setting name="useGeneratedKeys" value="false" /> <setting 
+			name="autoMappingBehavior" value="PARTIAL" /> <setting name="defaultExecutorType" 
+			value="SIMPLE" /> <setting name="defaultStatementTimeout" value="25" /> <setting 
+			name="safeRowBoundsEnabled" value="false" /> <setting name="localCacheScope" 
+			value="SESSION" /> <setting name="jdbcTypeForNull" value="OTHER" /> <setting 
+			name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString" /> -->
+
+		<!-- 从经典的数据库列名A_COLUMN启用自动映射到骆驼标识的经典的Java属性名aColumn -->
+		<setting name="mapUnderscoreToCamelCase" value="true" />
+
+	</settings>
+
+
+	<typeHandlers>
+		<typeHandler javaType="Map" jdbcType="CURSOR"
+			handler="com.ihidea.core.support.orm.mybatis3.ResultSetTypeHandler" />
+	</typeHandlers>
+
+	<plugins>
+		<plugin
+			interceptor="com.ihidea.core.support.orm.mybatis3.interceptor.dialect.DialectInterceptor">
+			<!-- <property name="dialectClass" value="com.ihidea.core.support.orm.mybatis3.interceptor.dialect.OracleDialect" 
+				/> -->
+		</plugin>
+		<!--<plugin interceptor="com.ihidea.core.support.orm.mybatis3.interceptor.IbatisExInterceptor" 
+			/> -->
+	</plugins>
+
+</configuration>

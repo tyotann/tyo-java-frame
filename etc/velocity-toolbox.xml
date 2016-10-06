@@ -1,0 +1,5 @@
+<tool>
+	<key>dateUtils</key>
+	<scope>request</scope>
+	<class>com.ihidea.core.util.DateUtilsEx</class>
+</tool>

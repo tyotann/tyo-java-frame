@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ihidea.component.oauth2.dao.OauthRefreshTokenMapper" >
+  <resultMap id="BaseResultMap" type="com.ihidea.component.oauth2.dao.model.OauthRefreshToken" >
+    <result column="TOKEN_ID" property="tokenId" jdbcType="VARCHAR" />
+    <result column="APP_KEY" property="appKey" jdbcType="VARCHAR" />
+    <result column="OPEN_ID" property="openId" jdbcType="VARCHAR" />
+    <result column="INVALID_DATE" property="invalidDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    TOKEN_ID, APP_KEY, OPEN_ID, INVALID_DATE
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.ihidea.component.oauth2.dao.model.OauthRefreshTokenCriteria" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from OAUTH_REFRESH_TOKEN
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <delete id="deleteByExample" parameterType="com.ihidea.component.oauth2.dao.model.OauthRefreshTokenCriteria" >
+    delete from OAUTH_REFRESH_TOKEN
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.ihidea.component.oauth2.dao.model.OauthRefreshToken" >
+    insert into OAUTH_REFRESH_TOKEN (TOKEN_ID, APP_KEY, OPEN_ID, 
+      INVALID_DATE)
+    values (#{tokenId,jdbcType=VARCHAR}, #{appKey,jdbcType=VARCHAR}, #{openId,jdbcType=VARCHAR}, 
+      #{invalidDate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.ihidea.component.oauth2.dao.model.OauthRefreshToken" >
+    insert into OAUTH_REFRESH_TOKEN
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="tokenId != null" >
+        TOKEN_ID,
+      </if>
+      <if test="appKey != null" >
+        APP_KEY,
+      </if>
+      <if test="openId != null" >
+        OPEN_ID,
+      </if>
+      <if test="invalidDate != null" >
+        INVALID_DATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="tokenId != null" >
+        #{tokenId,jdbcType=VARCHAR},
+      </if>
+      <if test="appKey != null" >
+        #{appKey,jdbcType=VARCHAR},
+      </if>
+      <if test="openId != null" >
+        #{openId,jdbcType=VARCHAR},
+      </if>
+      <if test="invalidDate != null" >
+        #{invalidDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.ihidea.component.oauth2.dao.model.OauthRefreshTokenCriteria" resultType="java.lang.Integer" >
+    select count(*) from OAUTH_REFRESH_TOKEN
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update OAUTH_REFRESH_TOKEN
+    <set >
+      <if test="record.tokenId != null" >
+        TOKEN_ID = #{record.tokenId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.appKey != null" >
+        APP_KEY = #{record.appKey,jdbcType=VARCHAR},
+      </if>
+      <if test="record.openId != null" >
+        OPEN_ID = #{record.openId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.invalidDate != null" >
+        INVALID_DATE = #{record.invalidDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update OAUTH_REFRESH_TOKEN
+    set TOKEN_ID = #{record.tokenId,jdbcType=VARCHAR},
+      APP_KEY = #{record.appKey,jdbcType=VARCHAR},
+      OPEN_ID = #{record.openId,jdbcType=VARCHAR},
+      INVALID_DATE = #{record.invalidDate,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+</mapper>
