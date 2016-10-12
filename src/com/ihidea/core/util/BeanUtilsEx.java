@@ -92,6 +92,10 @@ public class BeanUtilsEx {
 	 */
 	public static <T> T copyPropertiesUnConvert(Object srcObject, Class<T> destClz) throws Exception {
 
+		if (srcObject == null) {
+			return null;
+		}
+
 		T result = destClz.newInstance();
 
 		copyPropertiesUnConvert(srcObject, result);
@@ -100,7 +104,10 @@ public class BeanUtilsEx {
 	}
 
 	public static void copyPropertiesUnConvert(Object srcObject, Object destObject) throws Exception {
-		org.springframework.beans.BeanUtils.copyProperties(srcObject, destObject);
+
+		if (srcObject != null) {
+			org.springframework.beans.BeanUtils.copyProperties(srcObject, destObject);
+		}
 	}
 
 	private static Map<String, BeanCopier> bcMap = new ConcurrentHashMap<String, BeanCopier>();
@@ -109,6 +116,10 @@ public class BeanUtilsEx {
 	 * 属性名,属性类型必须完全一致,速度最快
 	 */
 	public static <T> T copyPropertiesWithCglib(Object srcObject, Class<T> destClz) throws Exception {
+
+		if (srcObject == null) {
+			return null;
+		}
 
 		T result = destClz.newInstance();
 
@@ -119,14 +130,16 @@ public class BeanUtilsEx {
 
 	public static void copyPropertiesWithCglib(Object srcObject, Object destObject) throws Exception {
 
-		Class<? extends Object> srcClz = srcObject.getClass();
-		Class<? extends Object> descClz = destObject.getClass();
+		if (srcObject != null) {
+			Class<? extends Object> srcClz = srcObject.getClass();
+			Class<? extends Object> descClz = destObject.getClass();
 
-		if (bcMap.get(srcClz.getName() + "#" + descClz.getName()) == null) {
-			bcMap.put(srcClz.getName() + "#" + descClz.getName(), BeanCopier.create(srcClz, descClz, false));
+			if (bcMap.get(srcClz.getName() + "#" + descClz.getName()) == null) {
+				bcMap.put(srcClz.getName() + "#" + descClz.getName(), BeanCopier.create(srcClz, descClz, false));
+			}
+
+			bcMap.get(srcClz.getName() + "#" + descClz.getName()).copy(srcObject, destObject, null);
 		}
-
-		bcMap.get(srcClz.getName() + "#" + descClz.getName()).copy(srcObject, destObject, null);
 	}
 
 	private static class BeanConverter implements Converter {

@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -16,6 +17,7 @@ import com.ihidea.core.support.orm.mybatis3.interceptor.dialect.DialectIntercept
 
 /**
  * 日期共通方法
+ * 
  * @author TYOTANN
  */
 public final class DateUtilsEx {
@@ -43,6 +45,7 @@ public final class DateUtilsEx {
 	 * 得到当前系统时间
 	 * 如果应用服务器与数据库服务器时间同步的话,可以直接new Date()
 	 * </pre>
+	 * 
 	 * @return
 	 */
 	public static Date getSysDate() {
@@ -54,6 +57,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到传入日期的当月第一天
+	 * 
 	 * @param date
 	 * @return
 	 */
@@ -63,6 +67,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到传入日期的当年的第一天
+	 * 
 	 * @return
 	 */
 	public static Date getFDayInCurrentYear(Date date) {
@@ -71,6 +76,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 日期格式化成字符
+	 * 
 	 * @param date
 	 * @param format
 	 * @return
@@ -85,18 +91,25 @@ public final class DateUtilsEx {
 
 	/**
 	 * 字符格式化成时间
+	 * 
 	 * @param dateString
 	 * @param format
 	 * @return
 	 * @throws ParseException
 	 */
 	public static Date formatToDate(String dateString, String format) throws ParseException {
+
+		if (StringUtils.isBlank(dateString)) {
+			return null;
+		}
+
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
 		return sdf.parse(dateString);
 	}
 
 	/**
 	 * 得到当天的星期。
+	 * 
 	 * @return
 	 */
 	public static String getDayofWeek(Date date) {
@@ -124,6 +137,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到当年的最后一天。
+	 * 
 	 * @return
 	 */
 	public static Date getEDayInCurrentYear() {
@@ -134,6 +148,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到下一年。
+	 * 
 	 * @return
 	 */
 	public static String getNextYear() {
@@ -145,6 +160,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到当前年。
+	 * 
 	 * @return
 	 */
 	public static String getCurrYear() {
@@ -155,6 +171,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到当月。
+	 * 
 	 * @return
 	 */
 	public static String getCurrMothe() {
@@ -165,6 +182,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到上一年。
+	 * 
 	 * @return
 	 */
 	public static String getHistoryYear() {
@@ -176,6 +194,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到日期的+-月份
+	 * 
 	 * @return
 	 */
 	public static Date addMonths(Date date, int month) {
@@ -184,6 +203,7 @@ public final class DateUtilsEx {
 
 	/**
 	 * 得到下一天
+	 * 
 	 * @param date
 	 * @return
 	 */

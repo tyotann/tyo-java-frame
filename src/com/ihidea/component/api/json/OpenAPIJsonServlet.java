@@ -114,7 +114,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
 			}
 
 			// 移除调用函数名
-			methodName = StringUtilsEx.escapeXss(request.getPathInfo().substring(1));
+			methodName = request.getPathInfo().substring(1);
 
 			paramMap.put("FRAMEmethodName", methodName);
 
