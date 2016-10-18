@@ -346,8 +346,11 @@ public class IbatisServiceUtils {
 
 		String clsName = criteriaEntity.getClass().getName();
 
-		Class exampleCls = Class
-				.forName((clsName.endsWith("WithBLOBs") ? clsName.substring(0, clsName.length() - 9) : clsName) + "Criteria");
+		// entity对象与Criteria对象在同一个jar包内,可以确保是同一个classloader
+		Class exampleCls = Class.forName(
+				(clsName.endsWith("WithBLOBs") ? clsName.substring(0, clsName.length() - 9) : clsName) + "Criteria", true,
+				criteriaEntity.getClass().getClassLoader());
+
 		Object example = exampleCls.newInstance();
 
 		Method createCriteria = exampleCls.getDeclaredMethod("createCriteria");
@@ -473,8 +476,11 @@ public class IbatisServiceUtils {
 
 		String clsName = entity.getClass().getName();
 
-		Class exampleCls = Class
-				.forName((clsName.endsWith("WithBLOBs") ? clsName.substring(0, clsName.length() - 9) : clsName) + "Criteria");
+		// entity对象与Criteria对象在同一个jar包内,可以确保是同一个classloader
+		Class exampleCls = Class.forName(
+				(clsName.endsWith("WithBLOBs") ? clsName.substring(0, clsName.length() - 9) : clsName) + "Criteria", true,
+				entity.getClass().getClassLoader());
+
 		Object example = exampleCls.newInstance();
 
 		Method createCriteria = exampleCls.getDeclaredMethod("createCriteria");

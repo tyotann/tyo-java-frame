@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.Converter;
+import org.apache.commons.beanutils.converters.IntegerConverter;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cglib.beans.BeanCopier;
 
@@ -31,6 +33,9 @@ public class BeanUtilsEx {
 		ConvertUtils.register(converter, String.class);
 
 		ConvertUtils.register(converter, Map.class);
+
+		// apache注册默认的Integer值为null,否则在copy属性时,会把null转成0
+		ConvertUtils.register(new IntegerConverter(null), Integer.class);
 	}
 
 	/**
