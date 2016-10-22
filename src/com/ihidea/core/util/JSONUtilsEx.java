@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ihidea.core.support.exception.ServiceException;
@@ -24,6 +25,9 @@ public class JSONUtilsEx {
 
 		// deserialization时遇到没有的属性值,不报错
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		//允许属性没有引号
+		defaultMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 
 		// TODO 看是否能转话字典表数据,不行的话只能在前台转化
 		// mapper.setFilters(filterProvider);
