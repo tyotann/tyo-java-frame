@@ -388,4 +388,17 @@ public class FileSupportService extends CoreService {
 
 		}
 	}
+	
+	public String getRealPathById(String id, String fileImgSize){
+		
+		TCptDataInfo dataInfo = dataInfoDao.selectByPrimaryKey(id);
+		
+		FileIoEntity entity = new FileIoEntity();
+		entity.setDataInfo(dataInfo);
+		entity.setFileImgSize(fileImgSize);
+		
+		IFileIo fileIo = FileIoFactory.getInstance(dataInfo.getStoreName());
+		
+		return fileIo.getRealPath(entity);
+	}
 }

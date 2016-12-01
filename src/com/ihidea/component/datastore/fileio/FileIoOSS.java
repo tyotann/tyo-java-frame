@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.aliyun.oss.OSSClient;
@@ -25,7 +24,6 @@ import com.ihidea.core.util.JSONUtilsEx;
  * @author wenhao
  */
 @Component
-@Lazy
 public class FileIoOSS implements IFileIo {
 
 	private static Map<String, Map<String, String>> bucketMap = new HashMap<String, Map<String, String>>();
@@ -148,4 +146,55 @@ public class FileIoOSS implements IFileIo {
         }
         return out.toByteArray();
     }
+
+	public String getRealPath(FileIoEntity entity) {
+		
+		Map<String, String> bucketInfo = bucketMap.get(entity.getDataInfo().getStoreName());
+		
+		if (bucketInfo == null) {
+			bucketInfo = initBucketInfo(entity.getDataInfo().getStoreName());
+		}
+
+		if(bucketInfo != null && bucketInfo.get("realPath") != null){
+			
+			//拼接压缩参数
+			StringBuffer fileImgSizeParams = new StringBuffer();
+			
+			if(entity.getFileImgSize() != null){
+				
+				try{
+					
+					String[] sizeArray = entity.getFileImgSize().replace(",", "|").replace("x", "|").split("\\|");
+					//,m_lfit,h_100,w_100
+					fileImgSizeParams.append("?x-oss-process=image/resize");
+					
+					if(Integer.valueOf(sizeArray[0]) != 0 && Integer.valueOf(sizeArray[1]) != 0){
+						// 长宽均不为0，则为固定宽高压缩
+						fileImgSizeParams.append(",m_fill");
+					}
+					
+					if(Integer.valueOf(sizeArray[0]) != 0){
+						// 加入width压缩参数
+						fileImgSizeParams.append(",w_" + sizeArray[0]);
+					}
+					
+					if(Integer.valueOf(sizeArray[1]) != 0){
+						// 加入height压缩参数
+						fileImgSizeParams.append(",h_" + sizeArray[0]);
+					}
+					
+					// 指定当目标缩略图大于原图时是否处理。值是 1 表示不处理；值是 0 表示处理。
+					fileImgSizeParams.append(",limit_0");
+					
+					
+				}catch(Exception e){
+					throw new ServiceException("阿里云存储对象OSS处理压缩参数时出现异常:" + e.getMessage());
+				}
+				
+			}
+			
+			return bucketInfo.get("realPath") + "/" + entity.getDataInfo().getId() + fileImgSizeParams;
+		}
+		return null;
+	}
 }

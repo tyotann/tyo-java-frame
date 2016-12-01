@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.Converter;
 import org.apache.commons.beanutils.converters.IntegerConverter;
@@ -196,7 +195,11 @@ public class BeanUtilsEx {
 					if (StringUtils.isBlank(String.valueOf(value))) {
 						return null;
 					} else if (BeanUtilsEx.isSimpleObject(value)) {
-						return new BigDecimal(String.valueOf(value));
+						try {
+							return new BigDecimal(String.valueOf(value));
+						} catch (NumberFormatException e) {
+							throw new ServiceException(value + "转化数值发生异常");
+						}
 					}
 				} else if (type.equals(Long.class)) {
 

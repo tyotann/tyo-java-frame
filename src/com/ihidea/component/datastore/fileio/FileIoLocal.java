@@ -169,4 +169,9 @@ public class FileIoLocal implements IFileIo {
 			throw new ServiceException(e);
 		}
 	}
+
+	@Override
+	public String getRealPath(FileIoEntity entity) {
+		return null;
+	}
 }

@@ -9,8 +9,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
 import com.ihidea.core.support.SpringContextLoader;
@@ -75,6 +73,20 @@ public class RedisClient {
 		}
 	}
 
+	/**
+	 * 存set
+	 * 
+	 * @param key
+	 * @param value
+	 * @param expire
+	 */
+	public static void putSet(final String key, final Object value, final Integer expire) {
+		getRedisTemplate().opsForSet().add(key, value);
+		if (expire != null) {
+			getRedisTemplate().expire(key, expire, TimeUnit.SECONDS);
+		}
+	}
+
 	public static <T> T get(final String key, Class<T> clz) {
 		return get(key, clz, null);
 	}
@@ -87,6 +99,22 @@ public class RedisClient {
 		}
 
 		return (T) getRedisTemplate().opsForValue().get(key);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T, clz> Map<T, clz> getMap(final String key, Class<? extends Object> clz, final Integer expire) {
+		if (expire != null) {
+			getRedisTemplate().expire(key, expire, TimeUnit.SECONDS);
+		}
+		return (Map<T, clz>) getRedisTemplate().opsForHash().entries(key);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> Set<T> getSet(final String key, Class<T> clz, final Integer expire) {
+		if (expire != null) {
+			getRedisTemplate().expire(key, expire, TimeUnit.SECONDS);
+		}
+		return (Set<T>) getRedisTemplate().opsForSet().members(key);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -114,8 +142,8 @@ public class RedisClient {
 			// 分页完成
 			pl.setLimited(true);
 
-			return operations.range(key, PageLimitHolderFilter.getContext().getStartRowNo() - 1, PageLimitHolderFilter.getContext()
-					.getEndRowNo() - 1);
+			return operations.range(key, PageLimitHolderFilter.getContext().getStartRowNo() - 1,
+					PageLimitHolderFilter.getContext().getEndRowNo() - 1);
 		} else {
 
 			// 如果不分页则查出所有信息
@@ -146,6 +174,16 @@ public class RedisClient {
 		}
 	}
 
+	/**
+	 * 是否存在key
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static Boolean exits(String key) {
+		return getRedisTemplate().hasKey(key);
+	}
+
 	public static Long getAtomicLong(String key) {
 		return RedisClient.getRedisTemplate().boundValueOps(key).increment(0);
 	}
@@ -154,16 +192,23 @@ public class RedisClient {
 		return RedisClient.getRedisTemplate().boundHashOps(key).increment(hashKey, 0);
 	}
 
-	/**
-	 * 利用redis进行锁
-	 */
 	public static boolean getLock(String lockId, long expire) {
+		return getLock(lockId, expire, false);
+	}
+
+	/**
+	 * 互斥锁
+	 * 
+	 * @param alwaysSetExpire
+	 *            每次都设置失效时间，可以防止因为没有release导致某个key锁死；或者可以在有需要每次延长失效时间的业务处理上使用
+	 */
+	public static boolean getLock(String lockId, long expire, boolean alwaysSetExpire) {
 
 		String key = "tmp:lock:" + lockId;
 
 		boolean result = getRedisTemplate().boundValueOps(key).setIfAbsent(0);
 
-		if (result) {
+		if (alwaysSetExpire || result) {
 			getRedisTemplate().expire(key, expire, TimeUnit.SECONDS);
 		}
 

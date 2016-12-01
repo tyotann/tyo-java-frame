@@ -147,4 +147,10 @@ public class FileIoQiniu implements IFileIo {
 	public void updateContent(String id, byte[] content) {
 		throw new ServiceException("未实现");
 	}
+
+	@Override
+	public String getRealPath(FileIoEntity entity) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

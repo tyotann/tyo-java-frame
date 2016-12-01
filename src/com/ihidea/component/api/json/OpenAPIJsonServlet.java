@@ -153,12 +153,16 @@ public class OpenAPIJsonServlet extends HttpServlet {
 			if (rootThrowable instanceof ServiceException) {
 				logger.debug(rootThrowable.getMessage());
 
-				String errorCode = ((ServiceException) rootThrowable).getCode();
+				ServiceException se = ((ServiceException) rootThrowable);
 
-				if (StringUtils.isNotBlank(errorCode)) {
-					result.setCode(String.valueOf(errorCode));
+				if (StringUtils.isNotBlank(se.getCode())) {
+					result.setCode(se.getCode());
 				} else {
 					result.setCode(MJSONResultEntity.RESULT_LOGIC_ERROR);
+				}
+
+				if (se.getData() != null) {
+					result.setData(se.getData());
 				}
 			} else if (rootThrowable instanceof ServiceWarn) {
 				logger.debug(rootThrowable.getMessage());

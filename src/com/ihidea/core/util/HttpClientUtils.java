@@ -290,8 +290,8 @@ public class HttpClientUtils {
 		String responseStr = null;
 		try {
 			byte[] responseByte = HttpClientUtils.getContent(url, params, requestCharset);
-			responseStr = new String(responseByte, StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get()
-					: responseCharset);
+			responseStr = new String(responseByte,
+					StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get() : responseCharset);
 		} catch (IOException e) {
 			throw new RuntimeException("IO操作异常,查看是否超过请求设定时间:" + TIMEOUT + "毫秒!", e);
 		}
@@ -356,8 +356,8 @@ public class HttpClientUtils {
 		String responseStr = null;
 		try {
 			byte[] responseByte = httpclient.execute(hp, responseHandler);
-			responseStr = new String(responseByte, StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get()
-					: responseCharset);
+			responseStr = new String(responseByte,
+					StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get() : responseCharset);
 		} catch (ClientProtocolException e) {
 			logger.error(e.getMessage(), e);
 			throw new RuntimeException("客户端连接协议错误", e);
@@ -400,12 +400,9 @@ public class HttpClientUtils {
 		}
 		// 创建HttpClient实例
 		DefaultHttpClient httpclient = getHttpClient(charset, url.indexOf("https") == 0);
-		StringEntity entity = null;
-		try {
-			entity = new StringEntity(body, charset);
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-		}
+
+		StringEntity entity = new StringEntity(body, charset);
+
 		HttpPost hp = new HttpPost(url);
 		hp.setEntity(entity);
 		if (headers != null && headers.length > 0) {
@@ -422,8 +419,8 @@ public class HttpClientUtils {
 		String responseStr = null;
 		try {
 			byte[] responseByte = httpclient.execute(hp, responseHandler);
-			responseStr = new String(responseByte, StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get()
-					: responseCharset);
+			responseStr = new String(responseByte,
+					StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get() : responseCharset);
 		} catch (ClientProtocolException e) {
 			throw new RuntimeException("客户端连接协议错误", e);
 		} catch (IOException e) {
@@ -477,8 +474,8 @@ public class HttpClientUtils {
 			hp = new HttpPost(url);
 			hp.setEntity(formEntity);
 			byte[] responseByte = httpclient.execute(hp, responseHandler);
-			responseStr = new String(responseByte, StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get()
-					: responseCharset);
+			responseStr = new String(responseByte,
+					StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get() : responseCharset);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException("keystore文件不存在", e);
 		} catch (IOException e) {
@@ -550,8 +547,8 @@ public class HttpClientUtils {
 			hp = new HttpPost(url);
 			hp.setEntity(multipartEntity);
 			byte[] responseByte = httpclient.execute(hp, responseHandler);
-			responseStr = new String(responseByte, StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get()
-					: responseCharset);
+			responseStr = new String(responseByte,
+					StringUtils.isBlank(responseCharset) ? responseCharsetThreadLocal.get() : responseCharset);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException("keystore文件不存在", e);
 		} catch (IOException e) {
@@ -674,8 +671,8 @@ public class HttpClientUtils {
 		{
 			PoolStats poolStats = manager.getTotalStats();
 
-			logger.info("当前httpclient连接池信息-最大连接数:{},正在执行数:{},空闲连接数:{},阻塞连接数:{}", new Object[] { poolStats.getMax(), poolStats.getLeased(),
-					poolStats.getAvailable(), poolStats.getPending() });
+			logger.info("当前httpclient连接池信息-最大连接数:{},正在执行数:{},空闲连接数:{},阻塞连接数:{}",
+					new Object[] { poolStats.getMax(), poolStats.getLeased(), poolStats.getAvailable(), poolStats.getPending() });
 		}
 
 		return httpClientPool.get(httpCilentName);
@@ -709,8 +706,8 @@ public class HttpClientUtils {
 	 *            keystore访问密钥
 	 * @return keystore 对象
 	 */
-	private static KeyStore createKeyStore(final URL url, final String password) throws KeyStoreException, NoSuchAlgorithmException,
-			CertificateException, IOException {
+	private static KeyStore createKeyStore(final URL url, final String password)
+			throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		if (url == null) {
 			throw new IllegalArgumentException("Keystore url may not be null");
 		}

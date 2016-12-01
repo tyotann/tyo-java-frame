@@ -13,5 +13,7 @@ public interface IFileIo {
 	public byte[] get(String id);
 
 	public void execute(FileIoEntity fileIoEntity, IFileInputStream fileInputStreamImpl) throws Exception;
+	
+	public String getRealPath(FileIoEntity entity);
 
 }

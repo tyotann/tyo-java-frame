@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -362,6 +362,32 @@ public class FileController extends CoreController {
 	protected void download(final HttpServletRequest request, final HttpServletResponse response, String id, final String downloadFlag,
 			final String fileImgSize, final String mineType) throws Exception {
 
+		// 判断如果存在真实地址配置，则重定向至真实地址
+		String realPath = service.getRealPathById(id, fileImgSize);
+		if(realPath != null){
+			
+			if(realPath.indexOf("?") < 0){
+				// 拼接参数
+				String paramsStr = "";
+				Map<String, String[]> requestParams = request.getParameterMap();
+
+				for (Iterator<String> iter = requestParams.keySet().iterator(); iter.hasNext();) {
+					String name = iter.next();
+					String[] values = (String[]) requestParams.get(name);
+					String valueStr = "";
+					for (int i = 0; i < values.length; i++) {
+						valueStr = (i == values.length - 1) ? valueStr + values[i] : valueStr + values[i] + ",";
+					}
+					paramsStr += "&" + name + "=" + valueStr;
+				}
+				response.sendRedirect(realPath + (paramsStr == "" ? "" : "?" + paramsStr.substring(1, paramsStr.length())));
+				return ;
+			}else{
+				response.sendRedirect(realPath);
+				return ;
+			}
+		}
+		
 		service.execute(id, new IFileInputStream() {
 
 			@Override
@@ -479,7 +505,7 @@ public class FileController extends CoreController {
 							}
 
 							os.flush();
-						} catch (ClientAbortException e) {
+						} catch (Exception e) {
 						}
 					} else {
 						response.sendError(404);

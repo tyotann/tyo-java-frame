@@ -17,7 +17,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<org.springframework.version>3.2.15.RELEASE</org.springframework.version>
-		<org.apache.httpcomponents.version>4.2.2</org.apache.httpcomponents.version>
+		<org.apache.httpcomponents.version>4.4.1</org.apache.httpcomponents.version>
 		<com.fasterxml.jackson.core.version>2.0.2</com.fasterxml.jackson.core.version>
 	</properties>
 

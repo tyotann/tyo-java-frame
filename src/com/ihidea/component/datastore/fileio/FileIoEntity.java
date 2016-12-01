@@ -7,6 +7,17 @@ public class FileIoEntity {
 	private TCptDataInfo dataInfo;
 
 	private byte[] content;
+	
+	// 图片压缩尺寸("width|height")
+	private String fileImgSize;
+
+	public String getFileImgSize() {
+		return fileImgSize;
+	}
+
+	public void setFileImgSize(String fileImgSize) {
+		this.fileImgSize = fileImgSize;
+	}
 
 	public FileIoEntity() {
 	}

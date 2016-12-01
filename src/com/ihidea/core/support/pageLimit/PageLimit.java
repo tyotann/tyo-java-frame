@@ -264,6 +264,9 @@ public class PageLimit extends CoreEntity {
 
 			if (resultList != null && resultList.size() > 0 && getStartRowNo() != null) {
 
+				// 设置总记录数
+				setTotalCount(resultList.size());
+
 				// 如果开始行数>总记录数,返回null
 				if (getStartRowNo() > resultList.size()) {
 					return null;
@@ -280,7 +283,6 @@ public class PageLimit extends CoreEntity {
 			}
 
 			return resultList;
-
 		} finally {
 
 			// 分页后设置已经分过页

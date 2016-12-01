@@ -153,4 +153,9 @@ class FileIoDb implements IFileIo {
 	public void execute(FileIoEntity fileIoEntity, IFileInputStream fileInputStreamImpl) {
 		throw new ServiceException("未实现");
 	}
+
+	@Override
+	public String getRealPath(FileIoEntity entity) {
+		return null;
+	}
 }
