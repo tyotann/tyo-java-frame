@@ -8,6 +8,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.ihidea.core.support.SpringContextLoader;
+import com.ihidea.core.support.exception.ServiceException;
 
 import javassist.ClassClassPath;
 import javassist.ClassPool;
@@ -16,16 +24,9 @@ import javassist.Modifier;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.LocalVariableAttribute;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.ihidea.core.support.SpringContextLoader;
-import com.ihidea.core.support.exception.ServiceException;
-
 public class ClassUtilsEx {
 
-	private static Log logger = LogFactory.getLog(ClassUtilsEx.class);
+	private final static Logger logger = LoggerFactory.getLogger(ClassUtilsEx.class);
 
 	private static Map<String, Object> frameCache = new HashMap<String, Object>();
 
@@ -117,6 +118,8 @@ public class ClassUtilsEx {
 		return result;
 	}
 
+	private static Map<String, List<Object[]>> methodParamsList = new ConcurrentHashMap<String, List<Object[]>>();
+
 	/**
 	 * 得到方法参数名与参数类型
 	 * 
@@ -126,27 +129,47 @@ public class ClassUtilsEx {
 	 */
 	public static List<Object[]> getMethodParams(Method method) throws Exception {
 
-		ClassPool pool = ClassPool.getDefault();
-		pool.insertClassPath(new ClassClassPath(ClassUtilsEx.class));
+		String clzName = filterCGLIB(method.getDeclaringClass().getName());
+		String methodName = method.getName();
 
-		CtMethod cm = pool.getMethod(filterCGLIB(method.getDeclaringClass().getName()), method.getName());
-
-		CodeAttribute codeAttribute = cm.getMethodInfo().getCodeAttribute();
-
-		LocalVariableAttribute attr = (LocalVariableAttribute) codeAttribute.getAttribute(LocalVariableAttribute.tag);
-
-		List<Object[]> paramList = new ArrayList<Object[]>(cm.getParameterTypes().length);
-
-		int pos = Modifier.isStatic(cm.getModifiers()) ? 0 : 1;
-
-		for (int i = 0; i < cm.getParameterTypes().length; i++) {
-			Object[] param = new Object[2];
-			param[0] = attr.variableName(i + pos);
-			param[1] = method.getParameterTypes()[i];
-			paramList.add(param);
+		if (!methodParamsList.containsKey(clzName + "." + methodName)) {
+			initMethodParams(clzName, methodName, method);
 		}
 
-		return paramList;
+		return methodParamsList.get(clzName + "." + methodName);
+	}
+
+	// ClassPool.insertClassPath会有内存泄露,所以自己创建维护map
+	private synchronized static void initMethodParams(String clzName, String methodName, Method method) throws Exception {
+
+		if (!methodParamsList.containsKey(clzName + "." + methodName)) {
+
+			// ClassPool pool = ClassPool.getDefault();
+			ClassPool pool = new ClassPool(null);
+
+			// 如果使用ClassPool.getDefault();发现多次调用pool.insertClassPath后有内存泄露，泄露对象:ClassClassPath,ClassPathList
+			// 所以改为 new ClassPool(true);每次都重复创建ClassPool,使用完后销毁
+			pool.insertClassPath(new ClassClassPath(ClassUtilsEx.class));
+
+			CtMethod cm = pool.getMethod(clzName, methodName);
+
+			CodeAttribute codeAttribute = cm.getMethodInfo().getCodeAttribute();
+
+			LocalVariableAttribute attr = (LocalVariableAttribute) codeAttribute.getAttribute(LocalVariableAttribute.tag);
+
+			List<Object[]> paramList = new ArrayList<Object[]>(cm.getParameterTypes().length);
+
+			int pos = Modifier.isStatic(cm.getModifiers()) ? 0 : 1;
+
+			for (int i = 0; i < cm.getParameterTypes().length; i++) {
+				Object[] param = new Object[2];
+				param[0] = attr.variableName(i + pos);
+				param[1] = method.getParameterTypes()[i];
+				paramList.add(param);
+			}
+
+			methodParamsList.put(clzName + "." + methodName, paramList);
+		}
 	}
 
 	/**

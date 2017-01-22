@@ -88,9 +88,16 @@ public class HttpClientUtils {
 	// 因为线程安全,所以加入池
 	private static Map<String, DefaultHttpClient> httpClientPool = new HashMap<String, DefaultHttpClient>();
 
-	private static final int TIMEOUT = 30000;
+	private static int TIMEOUT = 30000;
 
 	private static final ThreadLocal<String> responseCharsetThreadLocal = new ThreadLocal<String>();
+
+	public static void setOptions(String type, Object val) {
+
+		if ("timeout".equals(type)) {
+			TIMEOUT = Integer.valueOf(String.valueOf(val));
+		}
+	}
 
 	static {
 

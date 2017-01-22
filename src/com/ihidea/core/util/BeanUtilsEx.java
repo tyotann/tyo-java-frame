@@ -316,7 +316,9 @@ public class BeanUtilsEx {
 
 			Map<String, Object> propertyMap;
 			try {
-				propertyMap = BeanUtils.describe(value);
+
+				// BeanUtils.describe会让val做一次string的转型,如果val是数组，则只会取第一位
+				propertyMap = org.apache.commons.beanutils.PropertyUtils.describe(value);
 			} catch (Exception e) {
 				throw new ServiceException(e);
 			}
