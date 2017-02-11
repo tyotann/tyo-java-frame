@@ -40,8 +40,7 @@
 
 		<copy todir="${jar.temp}" failonerror="true">
 			<fileset dir="${base.home}/src/">
-				<include name="**/*.properties" />
-				<include name="**/*.xml" />
+				<include name="**/*.*" />
 			</fileset>
 			<fileset dir="${base.home}/etc/">
 				<exclude name="pay/*.*" />

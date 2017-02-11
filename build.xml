@@ -41,6 +41,7 @@
 		<copy todir="${jar.temp}" failonerror="true">
 			<fileset dir="${base.home}/src/">
 				<include name="**/*.properties" />
+				<include name="**/*.htm" />
 				<include name="**/*.xml" />
 			</fileset>
 			<fileset dir="${base.home}/etc/">
