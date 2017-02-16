@@ -149,7 +149,7 @@ public class ClassUtilsEx {
 
 			// 如果使用ClassPool.getDefault();发现多次调用pool.insertClassPath后有内存泄露，泄露对象:ClassClassPath,ClassPathList
 			// 所以改为 new ClassPool(true);每次都重复创建ClassPool,使用完后销毁
-			pool.insertClassPath(new ClassClassPath(ClassUtilsEx.class));
+			pool.insertClassPath(new ClassClassPath(method.getClass()));
 
 			CtMethod cm = pool.getMethod(clzName, methodName);
 
