@@ -1,7 +1,6 @@
 package com.ihidea.component.pay.ail;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,7 @@ import org.dom4j.DocumentHelper;
 
 import com.ihidea.component.pay.PayPropertySupport;
 import com.ihidea.core.util.HttpClientUtils;
+import com.ihidea.core.util.SignatureUtils;
 
 /* *
  *类名：AlipayFunction
@@ -48,32 +48,6 @@ public class AlipayCore {
 		}
 
 		return result;
-	}
-
-	/**
-	 * 把数组所有元素排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
-	 * @param params 需要排序并参与字符拼接的参数组
-	 * @return 拼接后字符串
-	 */
-	public static String createLinkString(Map<String, String> params) {
-
-		List<String> keys = new ArrayList<String>(params.keySet());
-		Collections.sort(keys);
-
-		String prestr = "";
-
-		for (int i = 0; i < keys.size(); i++) {
-			String key = keys.get(i);
-			String value = params.get(key);
-
-			if (i == keys.size() - 1) {// 拼接时，不包括最后一个&字符
-				prestr = prestr + key + "=" + value;
-			} else {
-				prestr = prestr + key + "=" + value + "&";
-			}
-		}
-
-		return prestr;
 	}
 
 	/**
@@ -208,7 +182,7 @@ public class AlipayCore {
 	 * @return 签名结果字符串
 	 */
 	public static String buildRequestMysign(Map<String, String> sPara) {
-		String prestr = AlipayCore.createLinkString(sPara); // 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+		String prestr = SignatureUtils.createLinkString(sPara); // 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
 		String mysign = "";
 		if (PayPropertySupport.getProperty("pay.ali.wap.signType").equals("MD5")) {
 			mysign = MD5.sign(prestr, PayPropertySupport.getProperty("pay.ali.wap.key"), "UTF-8");

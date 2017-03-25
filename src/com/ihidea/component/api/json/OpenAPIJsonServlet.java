@@ -2,6 +2,7 @@ package com.ihidea.component.api.json;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +30,10 @@ import com.ihidea.core.support.exception.ServiceWarn;
 import com.ihidea.core.support.local.LocalAttributeHolder;
 import com.ihidea.core.support.pageLimit.PageLimitHolderFilter;
 import com.ihidea.core.util.ClassUtilsEx;
+import com.ihidea.core.util.DigitalUtils;
 import com.ihidea.core.util.JSONUtilsEx;
 import com.ihidea.core.util.ServletUtilsEx;
+import com.ihidea.core.util.SignatureUtils;
 import com.ihidea.core.util.StringUtilsEx;
 import com.ihidea.core.util.SystemUtilsEx;
 
@@ -223,6 +226,44 @@ public class OpenAPIJsonServlet extends HttpServlet {
 					paramMap.put(paramName, request.getParameter(paramName));
 				}
 			}
+		}
+
+		// header中加入：X-Ca-Timestamp，如果时间戳校验失败，返回当前时间
+		// header中加入：X-Ca-Signature，签名 md5(timestamp,data,固定值)
+		// 框架读取配置文件，如果设置了某个属性，则说明必须强制使用上面签名
+		if (CoreConstants.REQUEST_ENABLE_SIGN) {
+
+			Long nowTime = new Date().getTime();
+
+			String timestamp = request.getHeader("X-Ca-Timestamp");
+
+			String sign = request.getHeader("X-Ca-Signature");
+
+			if (StringUtils.isBlank(timestamp) || StringUtils.isBlank(sign)) {
+				throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "缺少签名信息");
+			}
+
+			try {
+				if (Math.abs(nowTime - Long.valueOf(timestamp)) > 900000) {
+					throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_TIME_ERROR, String.valueOf(nowTime));
+				}
+			} catch (NumberFormatException e) {
+				throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名时间格式错误");
+			}
+
+			if (StringUtils.isNotBlank(CoreConstants.REQUEST_ENABLE_SIGN_KEY)) {
+
+				// 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+				String paramStr = SignatureUtils.createLinkString(paramMap);
+
+				if (!sign.equalsIgnoreCase(DigitalUtils
+						.byte2hex(SignatureUtils.md5(paramStr + "#" + timestamp + "#" + CoreConstants.REQUEST_ENABLE_SIGN_KEY, "UTF-8")))) {
+					throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名值错误");
+				}
+			} else {
+				throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名秘钥:request.enable.sign.key,在服务器端未配置");
+			}
+
 		}
 
 		// 分页处理

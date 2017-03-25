@@ -1,5 +1,7 @@
 package com.ihidea.core;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.ihidea.core.util.PropertyUtils;
 
 public class CoreConstants {
@@ -87,6 +89,11 @@ public class CoreConstants {
 
 	// 启用cookies
 	public final static Boolean SESSION_ENABLE_COOKIES = "true".equals(getProperty("session.enable.cookies", "false"));
+
+	// 启用签名与时间戳检查
+	public final static Boolean REQUEST_ENABLE_SIGN = "true".equals(getProperty("request.enable.sign", "false"));
+
+	public final static String REQUEST_ENABLE_SIGN_KEY = getProperty("request.enable.sign.key", StringUtils.EMPTY);
 
 	public static String getProperty(String key, String defaultValue) {
 		return PropertyUtils.getProperty(key, defaultValue);

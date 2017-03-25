@@ -29,6 +29,12 @@ public class MJSONResultEntity implements Serializable {
 	// Session 超时
 	public final static String RESULT_SESSION_ERROR = "402";
 
+	// 签名信息异常
+	public final static String REQUEST_SIGN_ERROR = "403";
+
+	// 签名时间异常
+	public final static String REQUEST_SIGN_TIME_ERROR = "404";
+
 	/**
 	 * <pre>
 	 * 请求结果状态位

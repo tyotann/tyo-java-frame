@@ -4,9 +4,15 @@ import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.lang.StringUtils;
 
 public class SignatureUtils {
 
@@ -35,8 +41,8 @@ public class SignatureUtils {
 		return "";
 	}
 
-	public static byte[] signature(String type, String baseString, String keyString) throws GeneralSecurityException,
-			UnsupportedEncodingException {
+	public static byte[] signature(String type, String baseString, String keyString)
+			throws GeneralSecurityException, UnsupportedEncodingException {
 
 		Mac mac = Mac.getInstance(type);
 		SecretKeySpec secret = new SecretKeySpec(keyString.getBytes(), type);
@@ -65,6 +71,34 @@ public class SignatureUtils {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	/**
+	 * 把数组所有元素排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
+	 * 
+	 * @param params
+	 *            需要排序并参与字符拼接的参数组
+	 * @return 拼接后字符串
+	 */
+	public static String createLinkString(Map<String, ?> params) {
+
+		List<String> keys = new ArrayList<String>(params.keySet());
+		Collections.sort(keys);
+
+		String prestr = "";
+
+		for (int i = 0; i < keys.size(); i++) {
+			String key = keys.get(i);
+			String value = params.get(key) == null ? StringUtils.EMPTY : String.valueOf(params.get(key));
+
+			if (i == keys.size() - 1) {// 拼接时，不包括最后一个&字符
+				prestr = prestr + key + "=" + value;
+			} else {
+				prestr = prestr + key + "=" + value + "&";
+			}
+		}
+
+		return prestr;
 	}
 
 	public static void main(String[] args) throws Exception {

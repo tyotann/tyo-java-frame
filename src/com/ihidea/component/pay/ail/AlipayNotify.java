@@ -17,6 +17,7 @@ import com.ihidea.core.CoreConstants;
 import com.ihidea.core.support.SpringContextLoader;
 import com.ihidea.core.support.exception.ServiceException;
 import com.ihidea.core.support.local.LocalAttributeHolder;
+import com.ihidea.core.util.SignatureUtils;
 
 /* *
  *类名：AlipayNotify
@@ -89,7 +90,7 @@ public class AlipayNotify {
 		// 过滤空值、sign与sign_type参数
 		Map<String, String> sParaNew = AlipayCore.paraFilter(Params);
 		// 获取待签名字符串
-		String preSignStr = AlipayCore.createLinkString(sParaNew);
+		String preSignStr = SignatureUtils.createLinkString(sParaNew);
 		// 获得签名验证结果
 
 		// 通用快捷支付通用的支付宝公钥
@@ -227,7 +228,7 @@ public class AlipayNotify {
 		// 获取待签名字符串
 		String preSignStr = "";
 		if (isSort) {
-			preSignStr = AlipayCore.createLinkString(sParaNew);
+			preSignStr = SignatureUtils.createLinkString(sParaNew);
 		} else {
 			preSignStr = AlipayCore.createLinkStringNoSort(sParaNew);
 		}
