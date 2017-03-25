@@ -149,7 +149,7 @@ public class ClassUtilsEx {
 
 			// 如果使用ClassPool.getDefault();发现多次调用pool.insertClassPath后有内存泄露，泄露对象:ClassClassPath,ClassPathList
 			// 所以改为 new ClassPool(true);每次都重复创建ClassPool,使用完后销毁
-			pool.insertClassPath(new ClassClassPath(method.getClass()));
+			pool.insertClassPath(new ClassClassPath(method.getDeclaringClass()));
 
 			CtMethod cm = pool.getMethod(clzName, methodName);
 
@@ -159,11 +159,41 @@ public class ClassUtilsEx {
 
 			List<Object[]> paramList = new ArrayList<Object[]>(cm.getParameterTypes().length);
 
+			// pos主要用于处理局部变量表的this变量，静态方法没有this变量,所以静态不需要偏移,动态需要偏移1位
 			int pos = Modifier.isStatic(cm.getModifiers()) ? 0 : 1;
+
+			// if ("getUserInfo".equals(methodName)) {
+			// for (int i = 0; i < attr.tableLength(); i++) {
+			// logger.error("###########attr.index:{},pos:{},i:{},cm.getParameterTypes().length:{}",
+			// new Object[] { attr.index(i), pos, i,
+			// cm.getParameterTypes().length });
+			// }
+			// }
+
+			Map<Integer, String> sortMap = new HashMap<Integer, String>();
+
+			// 设置参数idx与参数名称的对应关系 例如 :public Object getUserInfo(MobileInfo
+			// mobileInfo, String userId, String verify)
+			// attr.index()下标不一定按照自然增序添加,所以用map维护
+			// attr.index(i) : attr为局部变量表, index(i)为参数所在顺序：
+			// 变量表位置:0,参数顺序8,参数名:userCompany[内部变量]
+			// 变量表位置:1,参数顺序5,参数名:city[内部变量]
+			// 变量表位置:2,参数顺序6,参数名:p_city[内部变量]
+			// 变量表位置:3,参数顺序7,参数名:v_city[内部变量]
+			// 变量表位置:4,参数顺序0,参数名:this
+			// 变量表位置:5,参数顺序1,参数名:mobileInfo[参数]
+			// 变量表位置:6,参数顺序2,参数名:userId[参数]
+			// 变量表位置:7,参数顺序3,参数名:verify[参数]
+			for (int i = 0; i < attr.tableLength(); i++) {
+				if (attr.index(i) >= pos && attr.index(i) < cm.getParameterTypes().length + pos) {
+					sortMap.put(attr.index(i) - pos, attr.variableName(i));
+				}
+			}
 
 			for (int i = 0; i < cm.getParameterTypes().length; i++) {
 				Object[] param = new Object[2];
-				param[0] = attr.variableName(i + pos);
+
+				param[0] = sortMap.get(i);
 				param[1] = method.getParameterTypes()[i];
 				paramList.add(param);
 			}
