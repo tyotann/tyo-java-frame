@@ -30,6 +30,7 @@ import com.ihidea.core.support.exception.ServiceWarn;
 import com.ihidea.core.support.local.LocalAttributeHolder;
 import com.ihidea.core.support.pageLimit.PageLimitHolderFilter;
 import com.ihidea.core.util.ClassUtilsEx;
+import com.ihidea.core.util.CommonUtilsEx;
 import com.ihidea.core.util.DigitalUtils;
 import com.ihidea.core.util.JSONUtilsEx;
 import com.ihidea.core.util.ServletUtilsEx;
@@ -52,6 +53,12 @@ public class OpenAPIJsonServlet extends HttpServlet {
 
 	private Map<String, OpenAPIMethod> mobileMethodAnnoMap = new HashMap<String, OpenAPIMethod>();
 
+	private String signkey;
+
+	private String servletName;
+
+	private String ipRanges;
+
 	/**
 	 * 初始化，扫描系统中所有的mobileMethod
 	 */
@@ -59,6 +66,11 @@ public class OpenAPIJsonServlet extends HttpServlet {
 	public void init() throws ServletException {
 
 		try {
+
+			this.signkey = getInitParameter("signkey");
+			this.servletName = StringUtils.defaultIfEmpty(getInitParameter("servletName"), StringUtils.EMPTY);
+			this.ipRanges = getInitParameter("ipRanges");
+
 			Map<String, Object> openClz = SpringContextLoader.getBeansWithAnnotation(OpenAPI.class);
 
 			if (openClz != null) {
@@ -79,8 +91,14 @@ public class OpenAPIJsonServlet extends HttpServlet {
 						if (mobileMethodMap.containsKey(methodName) || mobileMethodAnnoMap.containsKey(methodName)) {
 							throw new ServiceException("API接口:" + methodName + "有重复定义,请检查代码!");
 						} else {
-							mobileMethodMap.put(methodName, method);
-							mobileMethodAnnoMap.put(methodName, methodAnno);
+
+							if (servletName.equals(methodAnno.servletName())) {
+								mobileMethodMap.put(methodName, method);
+								mobileMethodAnnoMap.put(methodName, methodAnno);
+							} else {
+								logger.info("Servlet配置servletName:{},与API配置servletName:{},不符",
+										new Object[] { servletName, methodAnno.servletName() });
+							}
 						}
 					}
 				}
@@ -105,6 +123,11 @@ public class OpenAPIJsonServlet extends HttpServlet {
 		String jsonpcallback = null;
 
 		try {
+
+			// 访问IP检查
+			if (StringUtils.isNotBlank(ipRanges) && !CommonUtilsEx.isIPAddressInRange(SystemUtilsEx.getClientIpSingle(request), ipRanges)) {
+				throw new ServiceException("IP地址不允许访问");
+			}
 
 			// 得到参数
 			paramMap = getParam(request);
@@ -153,10 +176,16 @@ public class OpenAPIJsonServlet extends HttpServlet {
 
 			Throwable rootThrowable = ExceptionUtils.getRootCause(e) == null ? e : ExceptionUtils.getRootCause(e);
 
+			String errorText = rootThrowable.getMessage() == null ? String.valueOf(rootThrowable) : rootThrowable.getMessage();
+
 			if (rootThrowable instanceof ServiceException) {
-				logger.debug(rootThrowable.getMessage());
 
 				ServiceException se = ((ServiceException) rootThrowable);
+
+				// 如果存在code,但是无text,且定义了message_i18n,则从message中取得具体的text值
+				errorText = se.getMessage();
+
+				logger.debug(errorText);
 
 				if (StringUtils.isNotBlank(se.getCode())) {
 					result.setCode(se.getCode());
@@ -175,7 +204,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
 				result.setCode(MJSONResultEntity.RESULT_EXCEPTION);
 			}
 
-			result.setText(rootThrowable.getMessage() == null ? String.valueOf(rootThrowable) : rootThrowable.getMessage());
+			result.setText(errorText);
 		} finally {
 
 			// 如果需要跨域访问,则支持跨域 TODO 后期需要设置IP白名单
@@ -231,7 +260,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
 		// header中加入：X-Ca-Timestamp，如果时间戳校验失败，返回当前时间
 		// header中加入：X-Ca-Signature，签名 md5(timestamp,data,固定值)
 		// 框架读取配置文件，如果设置了某个属性，则说明必须强制使用上面签名
-		if (CoreConstants.REQUEST_ENABLE_SIGN) {
+		if (StringUtils.isNotBlank(this.signkey)) {
 
 			Long nowTime = new Date().getTime();
 
@@ -248,22 +277,16 @@ public class OpenAPIJsonServlet extends HttpServlet {
 					throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_TIME_ERROR, String.valueOf(nowTime));
 				}
 			} catch (NumberFormatException e) {
-				throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名时间格式错误");
+				throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名时间错误");
 			}
 
-			if (StringUtils.isNotBlank(CoreConstants.REQUEST_ENABLE_SIGN_KEY)) {
+			// 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+			String paramStr = SignatureUtils.createLinkString(paramMap);
 
-				// 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
-				String paramStr = SignatureUtils.createLinkString(paramMap);
-
-				if (!sign.equalsIgnoreCase(DigitalUtils
-						.byte2hex(SignatureUtils.md5(paramStr + "#" + timestamp + "#" + CoreConstants.REQUEST_ENABLE_SIGN_KEY, "UTF-8")))) {
-					throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名值错误");
-				}
-			} else {
-				throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名秘钥:request.enable.sign.key,在服务器端未配置");
+			if (!sign.equalsIgnoreCase(
+					DigitalUtils.byte2hex(SignatureUtils.md5(paramStr + "#" + timestamp + "#" + this.signkey, "UTF-8")))) {
+				throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名错误");
 			}
-
 		}
 
 		// 分页处理

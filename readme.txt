@@ -1,8 +1,26 @@
 
-##################################################支持重放签名############################################################
-配置文件中设置参数:
-request.enable.sign=true
-request.enable.sign.key="TYO"
+##################################################支持重放签名、IP限制、多个servlet区分############################################################
+	<servlet>
+		<servlet-name>api2</servlet-name>
+		<servlet-class>com.ihidea.component.api.json.OpenAPIJsonServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+		<init-param>
+			<param-name>signkey</param-name>
+			<param-value>TYO</param-value>
+		</init-param>
+		<init-param>
+			<param-name>servletName</param-name>
+			<param-value>xxx</param-value>
+		</init-param>
+		<init-param>
+			<param-name>ipRanges</param-name>
+			<param-value>10.0.0.0/8</param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>api2</servlet-name>
+		<url-pattern>/api2/*</url-pattern>
+	</servlet-mapping>
 
 
 request头部需要增加参数:

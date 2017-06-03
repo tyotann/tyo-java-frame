@@ -65,7 +65,7 @@ public class MJSONResultEntity implements Serializable {
 			pageLimit = PageLimitHolderFilter.getContext();
 		}
 
-		return pageLimit.limited() ? pageLimit : null;
+		return (pageLimit != null && pageLimit.limited()) ? pageLimit : null;
 	}
 
 	public void setPageLimit(PageLimit pageLimit) {

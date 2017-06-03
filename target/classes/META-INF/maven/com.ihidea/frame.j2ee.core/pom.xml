@@ -210,10 +210,11 @@
 			<version>1.1.2</version>
 		</dependency>
 
+		<!-- javassist -->
 		<dependency>
-			<groupId>javassist</groupId>
+			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.12.0.GA</version>
+			<version>3.21.0-GA</version>
 		</dependency>
 
 		<!-- quartz -->

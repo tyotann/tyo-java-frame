@@ -17,6 +17,9 @@ public @interface OpenAPIMethod {
 	// 对应的应用名,默认为当前方法名.函数名
 	String methodName() default StringUtils.EMPTY;
 
+	// 对应的servlet名称,默认为当前方法名.函数名
+	String servletName() default StringUtils.EMPTY;
+
 	// 需要登录的页面，默认为true
 	// boolean isLogin();
 
