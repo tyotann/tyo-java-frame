@@ -1,5 +1,6 @@
-package com.ihidea.component.mobile.push;
+package com.ihidea.component.mobile.push.jPush;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,23 +8,24 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import com.ihidea.component.mobile.push.MobilePushEntity;
+import com.ihidea.core.CoreConstants;
+import com.ihidea.core.support.exception.ServiceException;
+import com.ihidea.core.util.PropertyUtils;
+import com.ihidea.core.util.StringUtilsEx;
 
 import cn.jpush.api.JPushClient;
 import cn.jpush.api.common.DeviceType;
+import cn.jpush.api.push.PushResult;
 import cn.jpush.api.push.model.Platform;
 import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.audience.Audience;
 import cn.jpush.api.push.model.notification.AndroidNotification;
 import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
-
-import com.ihidea.core.CoreConstants;
-import com.ihidea.core.support.exception.ServiceException;
-import com.ihidea.core.util.StringUtilsEx;
 
 /**
  * 引用到Jpush包，所以延迟加载
@@ -37,19 +39,13 @@ public class JPushService {
 
 	private final static Logger logger = LoggerFactory.getLogger(JPushService.class);
 
-	@Autowired
-	private MobilePushService mobilePushService;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
 	public void sendNotification2App(String appid, MobilePushEntity pushEntity, DeviceType platform) {
 
 		PushPayload.Builder payloadBuilder = PushPayload.newBuilder();
 		payloadBuilder.setAudience(Audience.all());
 
 		log(appid, String.valueOf(platform), "all", null, null, null, pushEntity.getType(), pushEntity.getValue(),
-				pushEntity.getMsgTitle(), pushEntity.getMsgContent());
+				pushEntity.getMsgTitle(), pushEntity.getMsgContent(), null);
 
 		send(appid, pushEntity, payloadBuilder, platform);
 	}
@@ -60,7 +56,7 @@ public class JPushService {
 		payloadBuilder.setAudience(Audience.tag(tag));
 
 		log(appid, String.valueOf(platform), null, tag, null, null, pushEntity.getType(), pushEntity.getValue(), pushEntity.getMsgTitle(),
-				pushEntity.getMsgContent());
+				pushEntity.getMsgContent(), null);
 
 		send(appid, pushEntity, payloadBuilder, platform);
 	}
@@ -71,7 +67,7 @@ public class JPushService {
 		payloadBuilder.setAudience(Audience.alias(alias.replace("-", "")));
 
 		log(appid, String.valueOf(platform), null, null, alias.replace("-", ""), null, pushEntity.getType(), pushEntity.getValue(),
-				pushEntity.getMsgTitle(), pushEntity.getMsgContent());
+				pushEntity.getMsgTitle(), pushEntity.getMsgContent(), null);
 
 		send(appid, pushEntity, payloadBuilder, platform);
 	}
@@ -82,7 +78,7 @@ public class JPushService {
 		payloadBuilder.setAudience(Audience.registrationId(regId));
 
 		log(appid, String.valueOf(platform), null, null, null, regId, pushEntity.getType(), pushEntity.getValue(),
-				pushEntity.getMsgTitle(), pushEntity.getMsgContent());
+				pushEntity.getMsgTitle(), pushEntity.getMsgContent(), null);
 
 		send(appid, pushEntity, payloadBuilder, platform);
 	}
@@ -90,8 +86,9 @@ public class JPushService {
 	private void send(String appid, MobilePushEntity pushEntity, PushPayload.Builder payloadBuilder, DeviceType deviceType) {
 
 		try {
-			List<String[]> JpushInfoList = mobilePushService.getJpushKeyInfo(appid, pushEntity.getJpushApiMasterSecret(),
-					pushEntity.getJpushAppKey());
+		    
+			List<String[]> JpushInfoList = getJpushKeyInfo(appid, pushEntity.getJpushApiMasterSecret(),
+					pushEntity.getJpushAppKey(), deviceType);
 
 			// 如果配置mobile.notify.ios.production=false,则是开发模式
 			boolean iosMode = true;
@@ -99,10 +96,6 @@ public class JPushService {
 					&& "false".equals(CoreConstants.getProperty("mobile.notify.ios.production").trim())) {
 				iosMode = false;
 			}
-
-			// JPushClient jPushClient = new
-			// JPushClient("6f9de6a1f8cdd8271edabde7",
-			// "13e390c79495cbd12e280b8c", true, 86400);
 
 			// 设置平台
 			payloadBuilder.setPlatform(deviceType.equals(DeviceType.IOS) ? Platform.ios() : Platform.android());
@@ -117,15 +110,6 @@ public class JPushService {
 			if (StringUtils.isNotBlank(pushEntity.getValue())) {
 				extrasMap.put("value", pushEntity.getValue());
 			}
-
-			// for (String key : pushEntity.getAttr().keySet()) {
-			// extrasMap.put(key, pushEntity.getAttr().get(key));
-			//
-			// // 兼容老版本推送
-			// if ("url".equals(key)) {
-			// extrasMap.put("uri", pushEntity.getAttr().get(key));
-			// }
-			// }
 
 			// 如果是IOS，设置平台特性
 			if (deviceType.equals(DeviceType.IOS)) {
@@ -159,36 +143,66 @@ public class JPushService {
 
 			PushPayload pushPayload = payloadBuilder.build();
 
-			for (String[] jpushInfo : JpushInfoList) {
-				try {
-					JPushClient jPushClient = new JPushClient(jpushInfo[0], jpushInfo[1], iosMode,
-							(pushEntity.getJpushTimeToLive() == null ? 86400 : pushEntity.getJpushTimeToLive()));
-					jPushClient.sendPush(pushPayload);
-				} catch (Exception e) {
-				}
+            for (String[] jpushInfo : JpushInfoList) {
+                try {
+                    JPushClient jPushClient = new JPushClient(jpushInfo[0], jpushInfo[1], iosMode,
+                        (pushEntity.getJpushTimeToLive() == null ? 86400 : pushEntity.getJpushTimeToLive()));
+                    PushResult result = jPushClient.sendPush(pushPayload);
+                    
+                    log(appid, String.valueOf(deviceType), null, null, null, null, pushEntity.getType(), pushEntity.getValue(),
+                        pushEntity.getMsgTitle(), pushEntity.getMsgContent(), String.valueOf(result.msg_id));
+                } catch (Exception e) {
+                }
 			}
 		} catch (Exception e) {
 			logger.error("JPUSH推送消息时发生异常:[" + e.getMessage() + "]", e);
 			throw new ServiceException("JPUSH推送消息时发生异常:[" + e.getMessage() + "],请与管理员联系!");
 		}
 	}
+	
+    /**
+     * 返回API MasterSecret,AppKey
+     * 
+     * @param appid
+     * @return
+     */
+    protected List<String[]> getJpushKeyInfo(String appid, String apiMasterSecret, String appKey, DeviceType deviceType) {
+        
+        List<String[]> resultA = new ArrayList<String[]>();
+        
+        try {
+            
+            // 如果设定了自定义key，则使用自定义，否则使用配置文件的配置
+            if (StringUtils.isNotBlank(apiMasterSecret) && StringUtils.isNotBlank(appKey)) {
+                resultA.add(new String[]{apiMasterSecret, appKey});
+            } else {
+                
+                if (deviceType.equals(DeviceType.IOS)) {
+                    resultA.add(new String[]{PropertyUtils.getProperty("push.jPush.iOS.secret"),
+                        PropertyUtils.getProperty("push.jPush.iOS.appkey")});
+                }
+                
+                if (deviceType.equals(DeviceType.Android)) {
+                    resultA.add(new String[]{PropertyUtils.getProperty("push.jPush.android.secret"),
+                        PropertyUtils.getProperty("push.jPush.android.appkey")});
+                }
+            }
+            
+        } catch (Exception e) {
+        }
+        
+        if (resultA.size() == 0) {
+            throw new ServiceException("请配置好推送的APPKEY");
+        }
+        
+        return resultA;
+    }
 
 	private void log(String appid, String platform, String typePlatform, String typeTag, String typeAlias, String typeReg, String type,
-			String value, String title, String content) {
+			String value, String title, String content, String msgId) {
 
-		// try {
-		logger.info("记录推送日志,appid:{},platform:{},typePlatform:{},typeTag:{},typeAlias:{},typeReg:{},type:{},value:{},title;{},content:{}",
-				new Object[] { appid, platform, typePlatform, typeTag, typeAlias, typeReg, type, value, title, content });
-		// jdbcTemplate
-		// .update("insert into cpt_notify_log (appid, id, platform, type_platform, type_tag, type_alias, type_registration, msg_type, msg_value, msg_title, msg_content, create_time)"
-		// + " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, sysdate)", new Object[]
-		// { appid, StringUtilsEx.getUUID(),
-		// platform, typePlatform, typeTag, typeAlias, typeReg, type, value,
-		// title, content });
-		// } catch (Exception e) {
-		// logger.error("记录推送日志时异常:" + e.getMessage(), e);
-		// }
-
+		logger.info("记录推送日志,appid:{},platform:{},typePlatform:{},typeTag:{},typeAlias:{},typeReg:{},type:{},value:{},title;{},content:{},msgId:{}",
+				new Object[] { appid, platform, typePlatform, typeTag, typeAlias, typeReg, type, value, title, content, msgId });
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -200,9 +214,6 @@ public class JPushService {
 		pushEntity.setValue("6a049b1a-18a8-494f-b41e-30051e66959c");
 
 		new JPushService().sendNotification2App("", pushEntity, DeviceType.Android);
-		// new JPushService().sendNotification2Alias("",
-		// "973fd6ac-252c-452a-b0e6-0cf57da90864",pushEntity,
-		// DeviceEnum.Android);
 	}
 
 }
