@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.ihidea.component.api.IAPIVerify;
 import com.ihidea.component.api.MobileInfo;
@@ -130,8 +131,6 @@ public class OpenAPIJsonServlet extends HttpServlet {
         // 函数名
         String methodName = null;
         
-        String jsonpcallback = null;
-        
         try {
             
             // 访问IP检查
@@ -140,10 +139,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
             }
             
             // 得到参数
-            paramMap = getParam(request);
-            
-            // 如果在getParam中出现异常,则不会返回跨域脚本
-            jsonpcallback = (String)paramMap.get("jsonpcallback");
+            paramMap = getParam(request, response);
             
             if (StringUtils.isBlank(request.getPathInfo())) {
                 throw new ServiceException("请求的接口格式错误");
@@ -216,13 +212,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
             
             result.setText(errorText);
         } finally {
-            
-            // 如果需要跨域访问,则支持跨域 TODO 后期需要设置IP白名单
-            if (StringUtils.isNotBlank(jsonpcallback)) {
-                ServletUtilsEx.renderJsonp(response, StringUtilsEx.escapeXss(jsonpcallback), result);
-            } else {
-                ServletUtilsEx.renderJson(response, result);
-            }
+            ServletUtilsEx.renderJson(response, result);
         }
     }
     
@@ -245,7 +235,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
      * @throws IOException
      */
     @SuppressWarnings("unchecked")
-    private Map<String, Object> getParam(HttpServletRequest request) throws Exception {
+    private Map<String, Object> getParam(HttpServletRequest request, HttpServletResponse response) throws Exception {
         
         // web中接口请求，用jquery的ajax post参数后发现如果参数中有多个且有数组，则参数名是xxx[1]这样的格式
         String paramJsonStr = request.getParameter("FRAMEparams");

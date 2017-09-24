@@ -1,9 +1,45 @@
+##################################################国际化支持###########################################################
+
+1.Application.java中增加过滤器，这样在api访问的url中带入参数locale=en之类
+    // filter
+    @Bean
+    public FilterRegistrationBean getLocalAttributeHolderFilter() {
+        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        registrationBean.setName("localAttributeHolderFilter");
+        registrationBean.setFilter(new LocalAttributeHolder());
+        registrationBean.setUrlPatterns(Arrays.asList(new String[]{"/api/*", "/mts/*"}));
+        
+        Map<String, String> initParameters = new HashMap<String, String>();
+        
+        // 多语设置
+        initParameters.put("holderAttributeName", "locale");
+        registrationBean.setInitParameters(initParameters);
+        registrationBean.setOrder(3);
+        return registrationBean;
+    }
+
+2.通过I18NUtils.getLocale()获得当前的locale，通过I18NUtils.getMessage()来获得配置文件中的异常代码
+
 ##################################################多数据源###########################################################
 
-<aop:pointcut id="dynamicDataSourceWithAnnotation" expression="@annotation(com.ihidea.core.support.dataSource.DynamicDataSource)" />
-<aop:advisor advice-ref="dynamicDataSourceInterceptor" pointcut-ref="dynamicDataSourceWithAnnotation" order="1"/>
-<bean id="dynamicDataSourceInterceptor" class="com.ihidea.core.support.dataSource.DynamicDataSourceInterceptor" />
+spring.xml
+	<!-- dataSource 配置 -->
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy"
+		p:targetDataSource-ref="dynamicDataSource" />
+		
+	<bean id="dynamicDataSource" class="com.ihidea.core.support.dataSource.DynamicDataSourceManager">
+		<property name="defaultTargetDataSource" ref="dataSourceDB1"></property>
+		<property name="targetDataSources">  
+			<map key-type="java.lang.String">  
+				<entry key="db1" value-ref="dataSourceDB1"></entry>
+				<entry key="db2" value-ref="dataSourceDB2" ></entry>
+				<entry key="db3" value-ref="dataSourceDB3" ></entry>
+			</map>  
+		</property>  
+	</bean>
 
+使用@DynamicDataSource 在方法上进行注解，key中填写对应的key名称，如db1
 
 
 
