@@ -18,7 +18,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.ihidea.component.api.IAPIVerify;
 import com.ihidea.component.api.MobileInfo;
@@ -290,8 +289,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
             String paramStr = SignatureUtils.createLinkString(paramMap);
             
             // 如果没有版本信息或版本信息未独立定义key，则使用默认的key，否则使用对应的key
-            String signkey = (StringUtils.isBlank(appVersion) || !signkeyMap.containsKey(appVersion)) ? signkeyMap.get("default")
-                : signkeyMap.get(appVersion);
+            String signkey = getSignKey(appVersion);
             
             String serverSign = DigitalUtils.byte2hex(SignatureUtils.md5(paramStr + "#" + timestamp + "#" + signkey, "UTF-8"));
             
@@ -377,6 +375,40 @@ public class OpenAPIJsonServlet extends HttpServlet {
         PageLimitHolderFilter.getContext().setLimited(false);
         
         return ClassUtilsEx.invokeMethod(method.getDeclaringClass().getSimpleName(), method.getName(), paramMap);
+    }
+    
+    // 如果没有版本信息（使用默认key） 黎江 2017-11-24
+    // 有版本信息有对应key（使用对应key）
+    // 有版本信息没有对应key但是有大版本信息（使用对应大版本对应key）
+    // 有版本信息没有对应key也没有大版本信息（使用默认key）
+    private String getSignKey(String appVersion) {
+        
+        String signkey = signkeyMap.get("default");
+        
+        if (StringUtils.isNotBlank(appVersion)) {
+            
+            if (signkeyMap.containsKey(appVersion)) {
+                signkey = signkeyMap.get(appVersion);
+            } else {
+                String[] versionArray = appVersion.split("\\.");
+                String mainVersion = "";
+                for (int i = 0; i < versionArray.length; i++) {
+                    if (i == 2) {
+                        mainVersion += "0";
+                    } else {
+                        mainVersion += versionArray[i];
+                    }
+                    if (i < (versionArray.length - 1)) {
+                        mainVersion += ".";
+                    }
+                }
+                if (signkeyMap.containsKey(mainVersion)) {
+                    signkey = signkeyMap.get(mainVersion);
+                }
+            }
+        }
+        
+        return signkey;
     }
     
 }
