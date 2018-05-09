@@ -101,6 +101,11 @@ public class OpenAPIJsonServlet extends HttpServlet {
                             methodName = method.getDeclaringClass().getSimpleName() + "." + method.getName();
                         }
                         
+                        // 接口支持版本号
+                        if (StringUtils.isNotBlank(methodAnno.version())) {
+                            methodName = methodName + "#" + methodAnno.version();
+                        }
+                        
                         if (servletName.equals(methodAnno.servletName())) {
                             
                             if (mobileMethodMap.containsKey(methodName) || mobileMethodAnnoMap.containsKey(methodName)) {
@@ -127,9 +132,6 @@ public class OpenAPIJsonServlet extends HttpServlet {
         // 得到参数
         Map<String, Object> paramMap = null;
         
-        // 函数名
-        String methodName = null;
-        
         try {
             
             // 访问IP检查
@@ -144,17 +146,25 @@ public class OpenAPIJsonServlet extends HttpServlet {
                 throw new ServiceException("请求的接口格式错误");
             }
             
-            // 移除调用函数名
-            methodName = request.getPathInfo().substring(1);
+            // 函数名
+            String methodName = request.getPathInfo().substring(1);
             
+            // 这里塞的时候不带版本号
             paramMap.put("FRAMEmethodName", methodName);
             
-            OpenAPIMethod mobileMethod = mobileMethodAnnoMap.get(methodName);
+            // 调用函数版本号:如果不在header中,则从param中获得
+            String methodVersion = request.getHeader("X-SC-version");
+            methodVersion = StringUtils.isNotBlank(methodVersion) ? methodVersion : (String)paramMap.get("X-SC-version");
+            
+            // 函数名带版本号信息,用于反射
+            String methodNameWithVersion = StringUtils.isBlank(methodVersion) ? methodName : methodName + "#" + methodVersion;
+            
+            OpenAPIMethod mobileMethod = mobileMethodAnnoMap.get(methodNameWithVersion);
             
             // 基本检查
             {
                 if (mobileMethod == null) {
-                    throw new ServiceException("请求的接口:" + methodName + "在服务器端没有定义,请检查!");
+                    throw new ServiceException("请求的接口:" + methodNameWithVersion + "在服务器端没有定义,请检查!");
                 }
             }
             
@@ -175,7 +185,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
             }
             
             // 请求方法
-            result.setData(requestMethod(methodName, mobileMethod, paramMap));
+            result.setData(requestMethod(methodNameWithVersion, mobileMethod, paramMap));
             
         } catch (Exception e) {
             
