@@ -97,24 +97,12 @@ push.jPush.android.secret=
 		<servlet-class>com.ihidea.component.api.json.OpenAPIJsonServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 		<init-param>
-			<param-name>signkey</param-name>
-			<param-value>TYO</param-value>
+			<param-name>signType</param-name>
+			<param-value>com.starcharge.app.api.mobile.sign.APISignDefault</param-value> <!-- 签名类实现IAPISign接口 -->
 		</init-param>
 		<init-param>
-			<param-name>signkey-4.0.0.1</param-name>
-			<param-value>TYO1</param-value>
-		</init-param>
-		<init-param>
-			<param-name>signkey-4.0.0.2</param-name>
-			<param-value>TYO2</param-value>
-		</init-param>
-		<init-param>
-			<param-name>servletName</param-name>
-			<param-value>xxx</param-value>
-		</init-param>
-		<init-param>
-			<param-name>ipRanges</param-name>
-			<param-value>10.0.0.0/8</param-value>
+			<param-name>signType-4.0.0.1</param-name>
+			<param-value>com.starcharge.app.api.mobile.sign.APISignAli</param-value> <!-- 签名类实现IAPISign接口 -->
 		</init-param>
 	</servlet>
 	<servlet-mapping>

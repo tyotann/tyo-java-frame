@@ -14,11 +14,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ihidea.component.api.IAPISign;
 import com.ihidea.component.api.IAPIVerify;
 import com.ihidea.component.api.MobileInfo;
 import com.ihidea.component.api.OpenAPINoneVerify;
@@ -32,7 +34,6 @@ import com.ihidea.core.support.local.LocalAttributeHolder;
 import com.ihidea.core.support.pageLimit.PageLimitHolderFilter;
 import com.ihidea.core.util.ClassUtilsEx;
 import com.ihidea.core.util.CommonUtilsEx;
-import com.ihidea.core.util.DigitalUtils;
 import com.ihidea.core.util.JSONUtilsEx;
 import com.ihidea.core.util.ServletUtilsEx;
 import com.ihidea.core.util.SignatureUtils;
@@ -54,7 +55,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
     
     private Map<String, OpenAPIMethod> mobileMethodAnnoMap = new HashMap<String, OpenAPIMethod>();
     
-    private Map<String, String> signkeyMap = new HashMap<String, String>();
+    private Map<String, IAPISign> signclassMap = new HashMap<String, IAPISign>();
     
     private String servletName;
     
@@ -67,16 +68,17 @@ public class OpenAPIJsonServlet extends HttpServlet {
     public void init() throws ServletException {
         
         try {
-            
             Enumeration<String> paramEnum = getInitParameterNames();
             
             if (paramEnum != null) {
                 while (paramEnum.hasMoreElements()) {
                     String paramName = paramEnum.nextElement();
-                    if ("signkey".equals(paramName)) {
-                        signkeyMap.put("default", getInitParameter(paramName));
-                    } else if (StringUtils.startsWith(paramName, "signkey-")) {
-                        signkeyMap.put(StringUtils.substring(paramName, "signkey-".length()), getInitParameter(paramName));
+                    
+                    if ("signclass".equals(paramName)) {
+                        signclassMap.put("default", (IAPISign)ClassUtils.getClass(getInitParameter(paramName)).newInstance());
+                    } else if (StringUtils.startsWith(paramName, "signclass-")) {
+                        signclassMap.put(StringUtils.substring(paramName, "signclass-".length()),
+                            (IAPISign)ClassUtils.getClass(getInitParameter(paramName)).newInstance());
                     }
                 }
             }
@@ -272,7 +274,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
         // header中加入：X-Ca-Timestamp，如果时间戳校验失败，返回当前时间
         // header中加入：X-Ca-Signature，签名 md5(timestamp,data,固定值)
         // 框架读取配置文件，如果设置了某个属性，则说明必须强制使用上面签名
-        if (signkeyMap.size() > 0) {
+        if (signclassMap.size() > 0) {
             
             Long nowTime = new Date().getTime();
             
@@ -298,14 +300,12 @@ public class OpenAPIJsonServlet extends HttpServlet {
             // 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
             String paramStr = SignatureUtils.createLinkString(paramMap);
             
-            // 如果没有版本信息或版本信息未独立定义key，则使用默认的key，否则使用对应的key
-            String signkey = getSignKey(appVersion);
+            IAPISign signMethod = !signclassMap.containsKey(appVersion) ? signclassMap.get("default") : signclassMap.get(appVersion);
             
-            String serverSign = DigitalUtils.byte2hex(SignatureUtils.md5(paramStr + "#" + timestamp + "#" + signkey, "UTF-8"));
-            
-            if (!sign.equalsIgnoreCase(serverSign)) {
-                logger.error("[安全检查]-签名错误,服务器端签名:{},客户端签名:{},IP地址:{},userAgent:{},版本号:{}",
-                    new Object[]{serverSign, sign, ipAddress, userAgent, appVersion});
+            // 签名验证
+            if (!signMethod.sign(appVersion, paramStr, timestamp, sign)) {
+                logger.error("[安全检查]-签名错误,签名类:{},客户端签名:{},IP地址:{},userAgent:{},版本号:{}",
+                    new Object[]{signMethod.getClass().getSimpleName(), sign, ipAddress, userAgent, appVersion});
                 throw new ServiceException(MJSONResultEntity.REQUEST_SIGN_ERROR, "签名错误");
             }
         }
@@ -382,43 +382,11 @@ public class OpenAPIJsonServlet extends HttpServlet {
         Method method = mobileMethodMap.get(methodName);
         
         // 开始支持分页，之前的信息查詢不需要分頁
-        PageLimitHolderFilter.getContext().setLimited(false);
-        
-        return ClassUtilsEx.invokeMethod(method.getDeclaringClass().getSimpleName(), method.getName(), paramMap);
-    }
-    
-    // 如果没有版本信息（使用默认key） 黎江 2017-11-24
-    // 有版本信息有对应key（使用对应key）
-    // 有版本信息没有对应key但是有大版本信息（使用对应大版本对应key）
-    // 有版本信息没有对应key也没有大版本信息（使用默认key）
-    private String getSignKey(String appVersion) {
-        
-        String signkey = signkeyMap.get("default");
-        
-        if (StringUtils.isNotBlank(appVersion)) {
-            
-            if (signkeyMap.containsKey(appVersion)) {
-                signkey = signkeyMap.get(appVersion);
-            } else {
-                String[] versionArray = appVersion.split("\\.");
-                String mainVersion = "";
-                for (int i = 0; i < versionArray.length; i++) {
-                    if (i == 2) {
-                        mainVersion += "0";
-                    } else {
-                        mainVersion += versionArray[i];
-                    }
-                    if (i < (versionArray.length - 1)) {
-                        mainVersion += ".";
-                    }
-                }
-                if (signkeyMap.containsKey(mainVersion)) {
-                    signkey = signkeyMap.get(mainVersion);
-                }
-            }
+        if (PageLimitHolderFilter.getContext() != null) {
+            PageLimitHolderFilter.getContext().setLimited(false);
         }
         
-        return signkey;
+        return ClassUtilsEx.invokeMethod(method.getDeclaringClass().getSimpleName(), method.getName(), paramMap);
     }
     
 }
