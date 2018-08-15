@@ -48,18 +48,26 @@ public class FileSupportService extends CoreService {
 	 * @return
 	 */
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public String add(String fileId, String fileName, byte[] fileContent, String storeName, String fileImgSize) {
+	public String add(String fileId, String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath) {
 
 		TCptDataInfo dataInfo = new TCptDataInfo();
 
 		// 文件信息
 		{
 			// 文件编号加入后缀名
-			if (StringUtils.isBlank(fileId)) {
+			if (StringUtils.isBlank(fileId) && StringUtils.isBlank(filePath)) {
 				if (!"true".equals(CoreConstants.getProperty("filestore.enable.suffix"))) {
 					dataInfo.setId(StringUtilsEx.getUUID());
 				} else {
 					dataInfo.setId(StringUtilsEx.getUUID() + "." + FileUtilsEx.getSuffix(fileName));
+				}
+			} else {
+				if(StringUtils.isNotBlank(filePath)) {
+					if(!filePath.endsWith("/")) {
+						filePath = filePath + "/" ;
+					}
+
+					dataInfo.setId(filePath + fileName);
 				}
 			}
 
@@ -115,12 +123,12 @@ public class FileSupportService extends CoreService {
 		return dataInfo.getId();
 	}
 
-	public String add(String fileName, byte[] fileContent, String storeName, String fileImgSize) {
-		return add(null, fileName, fileContent, storeName, fileImgSize);
+	public String add(String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath) {
+		return add(null, fileName, fileContent, storeName, fileImgSize, filePath);
 	}
 
 	public String add(String fileName, byte[] fileContent, String storeName) {
-		return add(null, fileName, fileContent, storeName, null);
+		return add(null, fileName, fileContent, storeName, null, null);
 	}
 
 	/**
@@ -155,7 +163,6 @@ public class FileSupportService extends CoreService {
 	/**
 	 * 提交文件,正式存储入库
 	 * @param id 文件编号
-	 * @param 文件描述
 	 * @throws Exception
 	 */
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -244,7 +251,7 @@ public class FileSupportService extends CoreService {
 
 	/**
 	 * 得到文件描述信息
-	 * @param id 文件id
+	 * @param ids 文件id
 	 * @return
 	 */
 	public List<FileIoEntity> getInfoByIds(String ids) {

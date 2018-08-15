@@ -121,7 +121,7 @@ public class FileController extends CoreController {
 	 */
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/uploadFile.do")
-	public void upload(HttpServletRequest request, HttpServletResponse response, String fileImgSize, String storeName, Integer resultFlag) {
+	public void upload(HttpServletRequest request, HttpServletResponse response, String fileImgSize, String storeName, Integer resultFlag, String filePath) {
 
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -174,7 +174,7 @@ public class FileController extends CoreController {
 
 				for (Object[] file : fileList) {
 					fileIdList.add(service.add((String) file[0], (byte[]) file[1], StringUtils.isBlank(storeName) ? "ds_upload" : storeName,
-							fileImgSize));
+							fileImgSize, filePath));
 				}
 
 				// 返回文件id
@@ -390,7 +390,6 @@ public class FileController extends CoreController {
 		
 		service.execute(id, new IFileInputStream() {
 
-			@Override
 			public void execute(FileIoEntity entity, InputStream is) throws Exception {
 
 				response.reset();
