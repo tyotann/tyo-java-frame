@@ -41,6 +41,9 @@ public class MJSONResultEntity implements Serializable {
     // 签名时间异常
     public final static String REQUEST_SIGN_TIME_ERROR = "404";
     
+    // 业务繁忙,接口访问频繁
+    public final static String BIZ_BUSY = "405";
+    
     /**
      * <pre>
      * 请求结果状态位
