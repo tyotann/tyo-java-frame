@@ -55,29 +55,25 @@ public class FileSupportService extends CoreService {
 		// 文件信息
 		{
 			// 文件编号加入后缀名
-			if (StringUtils.isBlank(fileId) && StringUtils.isBlank(filePath)) {
-				if (!"true".equals(CoreConstants.getProperty("filestore.enable.suffix"))) {
-					dataInfo.setId(StringUtilsEx.getUUID());
-				} else {
-					dataInfo.setId(StringUtilsEx.getUUID() + "." + FileUtilsEx.getSuffix(fileName));
+			if(StringUtils.isBlank(fileId)) {
+				StringBuilder fileIdBuilder = new StringBuilder();
+				if (StringUtils.isNotBlank(filePath)) {
+					fileIdBuilder.append(filePath.endsWith("/") ? filePath : filePath + "/") ;
 				}
-			} else {
-				if(StringUtils.isNotBlank(filePath)) {
-					if(!filePath.endsWith("/")) {
-						filePath = filePath + "/" ;
-					}
 
-					if(useOrigFileName) {
-						dataInfo.setId(filePath + fileName);
+				if (useOrigFileName) {
+					fileIdBuilder.append(fileName);
+				} else {
+					if (!"true".equals(CoreConstants.getProperty("filestore.enable.suffix"))) {
+						fileIdBuilder.append(StringUtilsEx.getUUID());
 					} else {
-						if (!"true".equals(CoreConstants.getProperty("filestore.enable.suffix"))) {
-							dataInfo.setId(filePath + StringUtilsEx.getUUID());
-						} else {
-							dataInfo.setId(filePath + StringUtilsEx.getUUID() + "." + FileUtilsEx.getSuffix(fileName));
-						}
+						fileIdBuilder.append(StringUtilsEx.getUUID()).append(FileUtilsEx.getSuffix(fileName));
 					}
 				}
+
+				dataInfo.setId(fileIdBuilder.toString());
 			}
+
 
 			// 有可能是非session
 			dataInfo.setCreateUser(SessionContext.getSessionInfo() != null ? SessionContext.getSessionInfo().getUserId() : null);
