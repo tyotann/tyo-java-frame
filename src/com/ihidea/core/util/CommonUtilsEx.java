@@ -35,8 +35,10 @@ public class CommonUtilsEx {
 	 */
 	public static String toXml(String jsonStr) throws Exception {
 
+		Class clz = jsonStr.trim().indexOf("[") == 0 ? ArrayList.class : HashMap.class ;
+
 		String xml = XMLUtilsEx
-				.serialize(JSONUtilsEx.deserialize(jsonStr, jsonStr.trim().indexOf("[") == 0 ? ArrayList.class : HashMap.class));
+				.serialize(JSONUtilsEx.deserialize(jsonStr, clz));
 
 		// 加入分页
 		PageLimit pl = PageLimitHolderFilter.getContext();
@@ -57,7 +59,7 @@ public class CommonUtilsEx {
 	/**
 	 * map转化成存储过程调用XML参数
 	 * 
-	 * @param map
+	 * @param param
 	 * @return
 	 */
 	public static String toXml(Map<String, Object> param) throws Exception {

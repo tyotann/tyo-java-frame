@@ -103,7 +103,7 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.ihidea.component.datastore.dao.model.TCptDataInfo" >
-    insert into CPT_DATA_INFO (ID, STORE_NAME, DESCRIPTION, 
+    replace into CPT_DATA_INFO (ID, STORE_NAME, DESCRIPTION,
       FILE_NAME, FILE_SIZE, CREATE_DATE, 
       CREATE_USER, STATUS)
     values (#{id,jdbcType=VARCHAR}, #{storeName,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 

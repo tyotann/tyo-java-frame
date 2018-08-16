@@ -48,7 +48,7 @@ public class FileSupportService extends CoreService {
 	 * @return
 	 */
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public String add(String fileId, String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath) {
+	public String add(String fileId, String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath, boolean useOrigFileName) {
 
 		TCptDataInfo dataInfo = new TCptDataInfo();
 
@@ -67,7 +67,15 @@ public class FileSupportService extends CoreService {
 						filePath = filePath + "/" ;
 					}
 
-					dataInfo.setId(filePath + fileName);
+					if(useOrigFileName) {
+						dataInfo.setId(filePath + fileName);
+					} else {
+						if (!"true".equals(CoreConstants.getProperty("filestore.enable.suffix"))) {
+							dataInfo.setId(filePath + StringUtilsEx.getUUID());
+						} else {
+							dataInfo.setId(filePath + StringUtilsEx.getUUID() + "." + FileUtilsEx.getSuffix(fileName));
+						}
+					}
 				}
 			}
 
@@ -123,12 +131,12 @@ public class FileSupportService extends CoreService {
 		return dataInfo.getId();
 	}
 
-	public String add(String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath) {
-		return add(null, fileName, fileContent, storeName, fileImgSize, filePath);
+	public String add(String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath, boolean useOrigFileName) {
+		return add(null, fileName, fileContent, storeName, fileImgSize, filePath, useOrigFileName);
 	}
 
 	public String add(String fileName, byte[] fileContent, String storeName) {
-		return add(null, fileName, fileContent, storeName, null, null);
+		return add(null, fileName, fileContent, storeName, null, null, false);
 	}
 
 	/**

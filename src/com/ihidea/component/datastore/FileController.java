@@ -118,10 +118,15 @@ public class FileController extends CoreController {
 	 * @param response
 	 * @param resultFlag
 	 *            返回结果，2：手机端上传，返回手机端需要格式
-	 */
+	 * @param filePath
+	 *            文件保存路径，如：stcharge/userid213123/
+	 * @param useOrigFileName
+	 *   		  是否用原文件名保存，1：是  0：否，用uuid重命名文件
+	 *
+	 **/
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/uploadFile.do")
-	public void upload(HttpServletRequest request, HttpServletResponse response, String fileImgSize, String storeName, Integer resultFlag, String filePath) {
+	public void upload(HttpServletRequest request, HttpServletResponse response, String fileImgSize, String storeName, Integer resultFlag, String filePath, Integer useOrigFileName) {
 
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -130,6 +135,11 @@ public class FileController extends CoreController {
 
 			if (param.containsKey("resultFlag")) {
 				resultFlag = Integer.valueOf(String.valueOf(param.get("resultFlag")));
+			}
+
+			boolean _useOrigFileName = false;
+			if(useOrigFileName != null && useOrigFileName == 1) {
+				_useOrigFileName = true;
 			}
 
 			List<Object[]> fileList = new ArrayList<Object[]>();
@@ -174,7 +184,7 @@ public class FileController extends CoreController {
 
 				for (Object[] file : fileList) {
 					fileIdList.add(service.add((String) file[0], (byte[]) file[1], StringUtils.isBlank(storeName) ? "ds_upload" : storeName,
-							fileImgSize, filePath));
+							fileImgSize, filePath, _useOrigFileName));
 				}
 
 				// 返回文件id
