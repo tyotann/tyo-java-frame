@@ -48,7 +48,7 @@ public class FileSupportService extends CoreService {
 	 * @return
 	 */
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public String add(String fileId, String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath, boolean useOrigFileName) {
+	public String add(String fileId, String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath) {
 
 		TCptDataInfo dataInfo = new TCptDataInfo();
 
@@ -56,22 +56,15 @@ public class FileSupportService extends CoreService {
 		{
 			// 文件编号加入后缀名
 			if(StringUtils.isBlank(fileId)) {
-				StringBuilder fileIdBuilder = new StringBuilder();
 				if (StringUtils.isNotBlank(filePath)) {
-					fileIdBuilder.append(filePath.endsWith("/") ? filePath : filePath + "/") ;
-				}
-
-				if (useOrigFileName) {
-					fileIdBuilder.append(fileName);
+                    dataInfo.setId(filePath);
 				} else {
 					if (!"true".equals(CoreConstants.getProperty("filestore.enable.suffix"))) {
-						fileIdBuilder.append(StringUtilsEx.getUUID());
+                        dataInfo.setId(StringUtilsEx.getUUID());
 					} else {
-						fileIdBuilder.append(StringUtilsEx.getUUID()).append(FileUtilsEx.getSuffix(fileName));
+                        dataInfo.setId(StringUtilsEx.getUUID() + "." + FileUtilsEx.getSuffix(fileName));
 					}
 				}
-
-				dataInfo.setId(fileIdBuilder.toString());
 			}
 
 
@@ -127,12 +120,12 @@ public class FileSupportService extends CoreService {
 		return dataInfo.getId();
 	}
 
-	public String add(String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath, boolean useOrigFileName) {
-		return add(null, fileName, fileContent, storeName, fileImgSize, filePath, useOrigFileName);
+	public String add(String fileName, byte[] fileContent, String storeName, String fileImgSize, String filePath) {
+		return add(null, fileName, fileContent, storeName, fileImgSize, filePath);
 	}
 
 	public String add(String fileName, byte[] fileContent, String storeName) {
-		return add(null, fileName, fileContent, storeName, null, null, false);
+		return add(null, fileName, fileContent, storeName, null, null);
 	}
 
 	/**

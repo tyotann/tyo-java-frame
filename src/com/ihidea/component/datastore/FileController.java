@@ -126,7 +126,7 @@ public class FileController extends CoreController {
 	 **/
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/uploadFile.do")
-	public void upload(HttpServletRequest request, HttpServletResponse response, String fileImgSize, String storeName, Integer resultFlag, String filePath, Integer useOrigFileName) {
+	public void upload(HttpServletRequest request, HttpServletResponse response, String fileImgSize, String storeName, Integer resultFlag, String filePath) {
 
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -135,11 +135,6 @@ public class FileController extends CoreController {
 
 			if (param.containsKey("resultFlag")) {
 				resultFlag = Integer.valueOf(String.valueOf(param.get("resultFlag")));
-			}
-
-			boolean _useOrigFileName = false;
-			if(useOrigFileName != null && useOrigFileName == 1) {
-				_useOrigFileName = true;
 			}
 
 			List<Object[]> fileList = new ArrayList<Object[]>();
@@ -184,7 +179,7 @@ public class FileController extends CoreController {
 
 				for (Object[] file : fileList) {
 					fileIdList.add(service.add((String) file[0], (byte[]) file[1], StringUtils.isBlank(storeName) ? "ds_upload" : storeName,
-							fileImgSize, filePath, _useOrigFileName));
+							fileImgSize, filePath));
 				}
 
 				// 返回文件id
