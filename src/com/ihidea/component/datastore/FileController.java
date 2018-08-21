@@ -119,9 +119,7 @@ public class FileController extends CoreController {
 	 * @param resultFlag
 	 *            返回结果，2：手机端上传，返回手机端需要格式
 	 * @param filePath
-	 *            文件保存路径，如：stcharge/userid213123/
-	 * @param useOrigFileName
-	 *   		  是否用原文件名保存，1：是  0：否，用uuid重命名文件
+	 *            文件保存路径+文件名，如：stcharge/userid213123/sdf.jpg
 	 *
 	 **/
 	@SuppressWarnings("unchecked")
