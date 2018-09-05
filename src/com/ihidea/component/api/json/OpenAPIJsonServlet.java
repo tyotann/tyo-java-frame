@@ -147,9 +147,9 @@ public class OpenAPIJsonServlet extends HttpServlet {
 
         try {
 
-            // 限流，如果被限流客户端返回code=429
+            // 限流
             if(rateLimit > 0.0 && !rateLimiter.tryAcquire()) {
-                throw new ServiceException("访问频率超过限制");
+                throw new ServiceException(MJSONResultEntity.BIZ_BUSY,"访问频率超过限制");
             }
 
             // 访问IP检查
