@@ -1,14 +1,12 @@
 package com.ihidea.core.util;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.security.Provider;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
@@ -266,6 +264,55 @@ public class SystemUtilsEx {
         }
         
         return null;
+    }
+
+
+    public static String dockerParentHostIp ;
+
+
+    /**
+     * 获取docker素宿主机ip
+     * @param startsWith ip前缀，不符合不返回
+     * @return
+     */
+    public static String getDockerParentHostIp(String startsWith) {
+
+        if(dockerParentHostIp == null) {
+            try {
+                Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+                NetworkInterface networkInterface;
+                Enumeration<InetAddress> inetAddresses;
+                InetAddress inetAddress;
+                String ip;
+                while (networkInterfaces.hasMoreElements()) {
+                    networkInterface = networkInterfaces.nextElement();
+                    inetAddresses = networkInterface.getInetAddresses();
+                    while (inetAddresses.hasMoreElements()) {
+                        inetAddress = inetAddresses.nextElement();
+                        if (inetAddress != null && inetAddress instanceof Inet4Address) { // IPV4
+                            ip = inetAddress.getHostAddress();
+                            if(ip.startsWith(startsWith)) {
+                                dockerParentHostIp = ip;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(StringUtils.isBlank(dockerParentHostIp)) {
+                    dockerParentHostIp = InetAddress.getLocalHost().getHostAddress();
+                }
+            } catch (Exception e) {
+                logger.error("获取docker宿主机ip异常", e);
+            }
+        }
+
+        return dockerParentHostIp;
+
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(getDockerParentHostIp(""));
     }
     
 }
