@@ -298,10 +298,7 @@ public class SystemUtilsEx {
                         }
                     }
                 }
-                if(StringUtils.isBlank(dockerParentHostIp)) {
-                    dockerParentHostIp = InetAddress.getLocalHost().getHostAddress();
-                }
-            } catch (Exception e) {
+            } catch (SocketException e) {
                 logger.error("获取docker宿主机ip异常", e);
             }
         }
