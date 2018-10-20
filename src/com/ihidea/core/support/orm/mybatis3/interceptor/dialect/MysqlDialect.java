@@ -26,8 +26,47 @@ public class MysqlDialect extends Dialect {
 	 * @param sql 执行的sql语句
 	 * @param offset 偏移量
 	 * @param limit 范围大小
-	 * @param offsetPlaceholder 偏移处理器
-	 * @param limitPlaceholder limit处理器
+	 * @return 添加分页后的sql语句
+	 */
+//	public String getLimitString(String sql, int offset, int limit) {
+//		final int temp = 11;
+//		final int tempInt = 100;
+//		sql = sql.trim();
+//		boolean isForUpdate = false;
+//		if (sql.toLowerCase().endsWith(" for update")) {
+//			sql = sql.substring(0, sql.length() - temp);
+//			isForUpdate = true;
+//		}
+//
+//		StringBuffer pagingSelect = new StringBuffer(sql.length() + tempInt);
+//		// if (offset > 0) {
+//		pagingSelect.append("select * from (");
+//		// }
+//
+//		// else {
+//		// pagingSelect.append("select * from ( ");
+//		// }
+//		pagingSelect.append(sql);
+//		// if (offset > 0) {
+//		pagingSelect.append(" ) mysqldialect1 limit " + offset + "," + limit);
+//		// }
+//
+//		// else {
+//		// pagingSelect.append(" ) where rownum <= " + String.valueOf(limit));
+//		// }
+//
+//		if (isForUpdate) {
+//			pagingSelect.append(" for update");
+//		}
+//
+//		return pagingSelect.toString();
+//	}
+
+	/**
+	 * 将sql变成分页sql语句,提供将offset及limit使用占位符(placeholder)替换.
+	 * @param sql 执行的sql语句
+	 * @param offset 偏移量
+	 * @param limit 范围大小
 	 * @return 添加分页后的sql语句
 	 */
 	public String getLimitString(String sql, int offset, int limit) {
@@ -41,21 +80,8 @@ public class MysqlDialect extends Dialect {
 		}
 
 		StringBuffer pagingSelect = new StringBuffer(sql.length() + tempInt);
-		// if (offset > 0) {
-		pagingSelect.append("select * from (");
-		// }
-
-		// else {
-		// pagingSelect.append("select * from ( ");
-		// }
 		pagingSelect.append(sql);
-		// if (offset > 0) {
-		pagingSelect.append(" ) mysqldialect1 limit " + offset + "," + limit);
-		// }
-
-		// else {
-		// pagingSelect.append(" ) where rownum <= " + String.valueOf(limit));
-		// }
+		pagingSelect.append(" limit " + offset + "," + limit);
 
 		if (isForUpdate) {
 			pagingSelect.append(" for update");
