@@ -67,7 +67,7 @@ public class DialectInterceptor implements Interceptor {
 				logger.debug("开始分页操作进行SQL：" + sql);
 
 				// 总页数为0的话,说明没有查过sql count数
-				if (pl.getTotalCount() == 0) {
+				if (pl.getTotalCount() == 0 && !pl.isOnlyGetRows()) {
 
 					// 重写count的sql
 					rewriteCount(sql, ms, invocationArgs);

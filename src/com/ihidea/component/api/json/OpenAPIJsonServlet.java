@@ -341,6 +341,9 @@ public class OpenAPIJsonServlet extends HttpServlet {
 
             PageLimitHolderFilter.setContext(Integer.valueOf(String.valueOf(paramMap.get("page"))),
                     Integer.valueOf(String.valueOf(paramMap.get("pagecount"))), totalCount);
+
+            PageLimitHolderFilter.getContext().setOnlyGetRows("1".equals(paramMap.get("onlygetrows")));
+
             PageLimitHolderFilter.getContext().setLimited(true);
         }
 

@@ -49,8 +49,11 @@ public class PageLimit extends CoreEntity {
 	// 查询起始行号(从1开始)
 	private Integer endRowNo;
 
-	// 时候只得到记录数
+	// 是否只得到记录数
 	private boolean onlyGetTotalCnt;
+
+	// 是否只返回rows不需要总数
+	private boolean onlyGetRows;
 
 	public PageLimit() {
 	}
@@ -256,6 +259,14 @@ public class PageLimit extends CoreEntity {
 
 	public void setOnlyGetTotalCnt(boolean onlyGetTotalCnt) {
 		this.onlyGetTotalCnt = onlyGetTotalCnt;
+	}
+
+	public boolean isOnlyGetRows() {
+		return onlyGetRows;
+	}
+
+	public void setOnlyGetRows(boolean onlyGetRows) {
+		this.onlyGetRows = onlyGetRows;
 	}
 
 	public <T> List<T> limitList(List<T> resultList) {
