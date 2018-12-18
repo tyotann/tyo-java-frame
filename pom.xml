@@ -6,7 +6,7 @@
 
 	<groupId>com.ihidea</groupId>
 	<artifactId>frame.core</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<packaging>jar</packaging>
 	<name>ihdea-frame-j2ee-core</name>
 	<url>http://maven.apache.org</url>
@@ -24,12 +24,12 @@
 
 	<distributionManagement>
 		<repository>
-			<id>nexus</id>
-			<url>http://10.8.8.7:8081/repository/maven-releases/</url>
+			<id>rdc-releases</id>
+			<url>https://repo.rdc.aliyun.com/repository/42378-release-YWUwgn/</url>
 		</repository>
 		<snapshotRepository>
-			<id>nexus</id>
-			<url>http://10.8.8.7:8081/repository/maven-snapshots/</url>
+			<id>rdc-snapshots</id>
+			<url>https://repo.rdc.aliyun.com/repository/42378-snapshot-SzMM2B/</url>
 		</snapshotRepository>
 	</distributionManagement>
 
