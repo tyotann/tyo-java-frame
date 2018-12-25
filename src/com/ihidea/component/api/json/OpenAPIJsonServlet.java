@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.dianping.cat.Cat;
 import com.google.common.util.concurrent.RateLimiter;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
@@ -206,6 +207,8 @@ public class OpenAPIJsonServlet extends HttpServlet {
             result.setData(requestMethod(methodNameWithVersion, mobileMethod, paramMap));
 
         } catch (Exception e) {
+
+            Cat.logError(e);
 
             Throwable rootThrowable = ExceptionUtils.getRootCause(e) == null ? e : ExceptionUtils.getRootCause(e);
 
