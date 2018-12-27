@@ -208,7 +208,9 @@ public class OpenAPIJsonServlet extends HttpServlet {
 
         } catch (Exception e) {
 
-            Cat.logError(e);
+            if(!(e instanceof ServiceException)) {
+                Cat.logError(e);
+            }
 
             Throwable rootThrowable = ExceptionUtils.getRootCause(e) == null ? e : ExceptionUtils.getRootCause(e);
 
