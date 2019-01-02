@@ -1,6 +1,7 @@
 package com.ihidea.component.api.json;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Enumeration;
@@ -208,10 +209,6 @@ public class OpenAPIJsonServlet extends HttpServlet {
 
         } catch (Exception e) {
 
-            if(!(e instanceof ServiceException)) {
-                Cat.logError(e);
-            }
-
             Throwable rootThrowable = ExceptionUtils.getRootCause(e) == null ? e : ExceptionUtils.getRootCause(e);
 
             String errorText = rootThrowable.getMessage() == null ? String.valueOf(rootThrowable) : rootThrowable.getMessage();
@@ -238,6 +235,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
                 logger.debug(rootThrowable.getMessage());
                 result.setCode(MJSONResultEntity.RESULT_WARN);
             } else {
+                Cat.logError(rootThrowable);
                 logger.error(rootThrowable.getMessage(), rootThrowable);
                 result.setCode(MJSONResultEntity.RESULT_EXCEPTION);
             }
