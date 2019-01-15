@@ -242,7 +242,7 @@ public class OpenAPIJsonServlet extends HttpServlet {
 
             result.setText(errorText);
         } finally {
-            // 如果是导出excel,则默认认为OutPutStream已经关闭,这里不再输出
+            // 如果是导出文件,则默认认为OutPutStream已经关闭,这里不再输出
             if(!isExportFile(response)) {
                 ServletUtilsEx.renderJson(response, result);
             }
@@ -250,9 +250,9 @@ public class OpenAPIJsonServlet extends HttpServlet {
     }
 
     private boolean isExportFile(HttpServletResponse response) {
-        return response.getContentType().contains("excel")
+        return response.getContentType() != null && (response.getContentType().contains("excel")
                 || response.getContentType().contains("pdf")
-                || response.getContentType().contains("xls");
+                || response.getContentType().contains("xls"));
     }
 
     @Override
