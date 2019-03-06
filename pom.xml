@@ -6,7 +6,7 @@
 
 	<groupId>com.ihidea</groupId>
 	<artifactId>frame.core</artifactId>
-	<version>1.1.6</version>
+	<version>1.1.7.SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>ihdea-frame-j2ee-core</name>
 	<url>http://maven.apache.org</url>
@@ -46,11 +46,6 @@
 
 	<dependencies>
 
-		<dependency>
-			<groupId>com.dianping.cat</groupId>
-			<artifactId>cat-client</artifactId>
-			<version>3.1.1</version>
-		</dependency>
 		<!-- apache-commons -->
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -368,6 +363,13 @@
 			<groupId>org.apache.catalina</groupId>
 			<artifactId>com.springsource.org.apache.catalina</artifactId>
 			<version>7.0.26</version>
+		</dependency>
+
+		<!-- cat -->
+		<dependency>
+			<groupId>com.dianping.cat</groupId>
+			<artifactId>cat-client</artifactId>
+			<version>3.1.1</version>
 		</dependency>
 
 		<!-- others -->

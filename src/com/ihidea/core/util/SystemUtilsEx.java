@@ -192,21 +192,12 @@ public class SystemUtilsEx {
      */
     public static String getClientIpSingle(HttpServletRequest request) {
         
-        String ip = request.getHeader("x-forwarded-for");
-        
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
+        String ip = getClientIp(request);
         
         if (ip != null) {
             String[] ipArray = ip.trim().split(",");
             ip = ipArray[ipArray.length - 1];
+            ip = ip.trim();
         }
         
         return ip;
