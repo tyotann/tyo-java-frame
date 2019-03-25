@@ -30,8 +30,8 @@ public class DynamicDataSourceInterceptor {
 	@Autowired
 	private TransactionTemplate transactionTemplate;
 
-	// 这里拦截有点问题，只支持非事务的，或者是与事务平级的
-	// 因为如果事务，在事务开始的时候已经获得了dataSource(一般这个时候是在service入口处)，后面再修改dataSource的route值，已经没有用了
+	// 无需考虑事务的情况,因为如果存在事务,那么方法一开始就已经获取了master的connection, 此时再设置route都是不生效的
+	// 并且这样也符合逻辑:凡是有事务的方法都只能使用master库, 即使后续再设置route也不能改变，直到事务结束
 	@Pointcut("@annotation(com.ihidea.core.support.dataSource.DynamicDataSource)")
 	public void function() {
 	}
@@ -49,30 +49,11 @@ public class DynamicDataSourceInterceptor {
 
 			if (StringUtils.isNotBlank(route)) {
 				DynamicDataSourceManager.setRoute(route);
+				if(logger.isDebugEnabled()) {
+					logger.debug("设置数据源为:" + route);
+				}
 			}
-
-			// 如果当前线程存在事务,且事务的数据源与本次数据源不一致，则需要新开事务,因为每次事务都会获取数据源
-			if (StringUtils.isNotBlank(route) && TransactionSynchronizationManager.isActualTransactionActive() && !preRoute.equals(route)) {
-
-				// 则新开启事务
-				transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-
-				return transactionTemplate.execute(new TransactionCallback<Object>() {
-
-					@Override
-					public Object doInTransaction(TransactionStatus status) {
-						try {
-							return pjp.proceed();
-						} catch (Throwable e) {
-							status.setRollbackOnly();
-							logger.error(e.getMessage(), e);
-						}
-						return null;
-					}
-				});
-			} else {
-				return pjp.proceed();
-			}
+			return pjp.proceed();
 		} finally {
 
 			// 恢复原有路由
