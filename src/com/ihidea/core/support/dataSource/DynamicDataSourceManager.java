@@ -35,4 +35,10 @@ public class DynamicDataSourceManager extends AbstractRoutingDataSource {
 		}
 		return local.get();
 	}
+
+
+	public static void clean() {
+		local.remove();
+	}
+
 }
