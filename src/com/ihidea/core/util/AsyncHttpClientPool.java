@@ -1,6 +1,7 @@
 package com.ihidea.core.util;
 
 
+import com.ihidea.core.support.exception.ServiceException;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import org.slf4j.Logger;
@@ -15,8 +16,7 @@ public class AsyncHttpClientPool {
 
     private final static Logger logger = LoggerFactory.getLogger(AsyncHttpClientPool.class);
 
-    private static AsyncHttpClient asyncHttpClient = new AsyncHttpClient(
-            new AsyncHttpClientConfig.Builder().setMaxConnections(100).setConnectTimeout(20000).setRequestTimeout(20000).build());
+    private static AsyncHttpClient asyncHttpClient = null;
 
     @PreDestroy
     private void destroy() {
@@ -26,8 +26,24 @@ public class AsyncHttpClientPool {
         }
     }
 
+    /**
+     * 初始化连接池
+     * @param maxConnections  最大连接数
+     * @param connectTimeout  建立连接超时时间
+     * @param requestTimeout  请求超时时间
+     */
+    public static void initPool(Integer maxConnections, Integer connectTimeout, Integer requestTimeout) {
+        asyncHttpClient = new AsyncHttpClient(
+                new AsyncHttpClientConfig.Builder().setMaxConnections(maxConnections).setConnectTimeout(connectTimeout).setRequestTimeout(requestTimeout).build());
+    }
+
     public static AsyncHttpClient getAsyncHttpClient() {
+        if(asyncHttpClient == null) {
+            throw new ServiceException("AsyncHttpClient连接池未初始化");
+        }
         return asyncHttpClient;
     }
+
+
 
 }
