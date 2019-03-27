@@ -4,11 +4,17 @@ package com.ihidea.core.util;
 import com.ihidea.core.support.exception.ServiceException;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.Param;
+import com.ning.http.client.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class AsyncHttpClientPool {
@@ -44,6 +50,53 @@ public class AsyncHttpClientPool {
         return asyncHttpClient;
     }
 
+
+    /**
+     * post请求
+     * @param url
+     * @param paramMap
+     * @param body
+     * @return
+     */
+    private String post(String url, Map<String, String> paramMap, String body) {
+
+        List<Param> params = null;
+        if(paramMap != null && paramMap.size() > 0) {
+            params = new ArrayList<>();
+            for(Map.Entry<String, String> entry : paramMap.entrySet()) {
+                params.add(new Param(entry.getKey(), entry.getValue()));
+            }
+        }
+
+        String result = null;
+
+        try {
+            logger.debug("[AsyncHttpClient]访问地址:{},参数:{},body:{}", new Object[]{url, JSONUtilsEx.serialize(paramMap), body});
+
+            Response response = null;
+            if(params != null) {
+                response = AsyncHttpClientPool.getAsyncHttpClient().preparePost(url).addHeader("Content-Type", "application/json;charset=utf-8")
+                        .addQueryParams(params).execute().get();
+            } else {
+                response = AsyncHttpClientPool.getAsyncHttpClient().preparePost(url).addHeader("Content-Type", "application/json;charset=utf-8")
+                        .setBody(body).execute().get();
+            }
+
+            logger.debug("[AsyncHttpClient]访问状态:{},结果:{}", new Object[]{response.getStatusCode(), response.getResponseBody("UTF-8")});
+
+            if (response.getStatusCode() == 200) {
+
+                result = response.getResponseBody("UTF-8");
+
+            } else {
+                logger.error("[AsyncHttpClient]请求失败, 返回response状态码:" + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            logger.error("[AsyncHttpClient]请求出现异常:" + e.getMessage(), e);
+        }
+
+        return result;
+    }
 
 
 }
