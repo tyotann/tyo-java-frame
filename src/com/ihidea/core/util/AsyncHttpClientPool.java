@@ -43,12 +43,12 @@ public class AsyncHttpClientPool {
                 new AsyncHttpClientConfig.Builder().setMaxConnections(maxConnections).setConnectTimeout(connectTimeout).setRequestTimeout(requestTimeout).build());
     }
 
-    public static AsyncHttpClient getAsyncHttpClient() {
-        if(asyncHttpClient == null) {
-            throw new ServiceException("AsyncHttpClient连接池未初始化");
-        }
-        return asyncHttpClient;
-    }
+//    public static AsyncHttpClient getAsyncHttpClient() {
+//        if(asyncHttpClient == null) {
+//            throw new ServiceException("AsyncHttpClient连接池未初始化");
+//        }
+//        return asyncHttpClient;
+//    }
 
 
     /**
@@ -75,10 +75,10 @@ public class AsyncHttpClientPool {
 
             Response response = null;
             if(params != null) {
-                response = AsyncHttpClientPool.getAsyncHttpClient().preparePost(url).addHeader("Content-Type", "application/json;charset=utf-8")
+                response = asyncHttpClient.preparePost(url).addHeader("Content-Type", "application/json;charset=utf-8")
                         .addQueryParams(params).execute().get();
             } else {
-                response = AsyncHttpClientPool.getAsyncHttpClient().preparePost(url).addHeader("Content-Type", "application/json;charset=utf-8")
+                response = asyncHttpClient.preparePost(url).addHeader("Content-Type", "application/json;charset=utf-8")
                         .setBody(body).execute().get();
             }
 
