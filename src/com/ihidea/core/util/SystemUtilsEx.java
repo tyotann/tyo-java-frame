@@ -216,19 +216,19 @@ public class SystemUtilsEx {
     
     static {
         hasMagickImage = false;
-        try {
-            
-            // System.out.println(System.getProperty("java.library.path"));
-            
-            System.setProperty("jmagick.systemclassloader", "no");
-            
-            System.loadLibrary("JMagick");
-            
-            hasMagickImage = true;
-            logger.info("系统已安装图形处理MagickImage...");
-        } catch (Throwable e) {
-            logger.info("系统未安装图形处理MagickImage,会使用默认图形处理,Linux下压缩图片可能会变红..." + e.getMessage());
-        }
+//        try {
+//
+//            // System.out.println(System.getProperty("java.library.path"));
+//
+//            System.setProperty("jmagick.systemclassloader", "no");
+//
+//            System.loadLibrary("JMagick");
+//
+//            hasMagickImage = true;
+//            logger.info("系统已安装图形处理MagickImage...");
+//        } catch (Throwable e) {
+//            logger.info("系统未安装图形处理MagickImage,会使用默认图形处理,Linux下压缩图片可能会变红..." + e.getMessage());
+//        }
     }
     
     // 判断系统是否安装MagickImage

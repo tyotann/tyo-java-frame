@@ -77,9 +77,9 @@ public class TaskService extends CoreService {
 			param.put("limitEnable", String.valueOf(pl.limited()));
 
 			if (pl.limited()) {
-				pl.setTotalCount(jdbcSupportService.getJdbcTemplate().queryForInt("select count(1) from ( "+
+				pl.setTotalCount(jdbcSupportService.getJdbcTemplate().queryForObject("select count(1) from ( "+
 							"select distinct seq, id, decode(min(status),-1,'异常','正常') as status, to_char(min(create_date),'yyyy.MM.dd hh24:mi:ss') as create_date  from cpt_task_log "+
-							"where id = ? and to_char(create_date,'yyyy.MM.dd') = ? group by id, seq order by seq desc) a", new Object[] {param.get("id").toString(), param.get("creatDate").toString()}));
+							"where id = ? and to_char(create_date,'yyyy.MM.dd') = ? group by id, seq order by seq desc) a", new Object[] {param.get("id").toString(), param.get("creatDate").toString()}, Integer.class));
 				
 				param.put("startResult", String.valueOf(pl.getStartRowNo()));
 				param.put("endResult", String.valueOf(pl.getEndRowNo()));
@@ -151,7 +151,7 @@ public class TaskService extends CoreService {
 	 */
 	public void addTasklog(Map<String, String> param) {
 		try {
-			int taskId = jdbcSupportService.getJdbcTemplate().queryForInt("select seq_cpt_task_quartz_id.nextval  from dual");
+			int taskId = jdbcSupportService.getJdbcTemplate().queryForObject("select seq_cpt_task_quartz_id.nextval  from dual", Integer.class);
 
 			jdbcSupportService
 					.getJdbcTemplate()
@@ -193,8 +193,8 @@ public class TaskService extends CoreService {
 
 		try {
 
-			int cnt = jdbcSupportService.getJdbcTemplate().queryForInt(
-					"select count(*)  from task_receive_cfg where receive_id = " + receiveId);
+			int cnt = jdbcSupportService.getJdbcTemplate().queryForObject(
+					"select count(*)  from task_receive_cfg where receive_id = " + receiveId, Integer.class);
 
 			if (cnt > 0) {
 				throw new ServiceException("已存在编号为【" + receiveId + "】的数据协议配置信息!");

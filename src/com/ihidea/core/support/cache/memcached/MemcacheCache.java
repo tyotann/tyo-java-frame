@@ -6,6 +6,8 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.util.Assert;
 
+import java.util.concurrent.Callable;
+
 public class MemcacheCache implements Cache {
 
 	private MemcachedClient client;
@@ -35,9 +37,24 @@ public class MemcacheCache implements Cache {
 		return (value != null ? new SimpleValueWrapper(value) : null);
 	}
 
+	@Override
+	public <T> T get(Object o, Class<T> aClass) {
+		return null;
+	}
+
+	@Override
+	public <T> T get(Object o, Callable<T> callable) {
+		return null;
+	}
+
 	// 默认为30天失效
 	public void put(Object key, Object value) {
 		this.client.set(objectToString(key), 3600, value);
+	}
+
+	@Override
+	public ValueWrapper putIfAbsent(Object o, Object o1) {
+		return null;
 	}
 
 	public void evict(Object key) {

@@ -15,14 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.RowMapperResultSetExtractor;
-import org.springframework.jdbc.core.SqlOutParameter;
-import org.springframework.jdbc.core.SqlParameter;
-import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
+import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.object.StoredProcedure;
 import org.springframework.stereotype.Component;
 
@@ -81,12 +74,12 @@ public class JdbcSupportService {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> List<T> queryForList(String sql, Class t) {
-		return (List<T>) getJdbcTemplate().query(sql, ParameterizedBeanPropertyRowMapper.newInstance(t));
+		return (List<T>) getJdbcTemplate().query(sql, BeanPropertyRowMapper.newInstance(t));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> List<T> queryForList(String sql, Object[] param, Class t) {
-		return (List<T>) getJdbcTemplate().query(sql, param, ParameterizedBeanPropertyRowMapper.newInstance(t));
+		return (List<T>) getJdbcTemplate().query(sql, param, BeanPropertyRowMapper.newInstance(t));
 	}
 
 	public List<Map<String, Object>> queryForList(String sql, Object... objects) {

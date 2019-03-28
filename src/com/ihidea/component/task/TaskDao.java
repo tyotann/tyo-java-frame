@@ -8,8 +8,8 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.ParameterizedBeanPropertyRowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +36,7 @@ public class TaskDao {
 
 		try {
 			task = jdbcTemplate.queryForObject("select * from cpt_task where task_id = ? and seq = ? and status=0 for update",
-					new Object[] { taskId, taskSeq }, ParameterizedBeanPropertyRowMapper.newInstance(TaskEntity.class));
+					new Object[] { taskId, taskSeq }, BeanPropertyRowMapper.newInstance(TaskEntity.class));
 
 			// 修改任务的taskSeq
 			jdbcTemplate.update(
@@ -44,7 +44,7 @@ public class TaskDao {
 					new Object[] { taskSeq.intValue() + 1, taskNextTime, SystemUtilsEx.getHostId(), taskId });
 
 			task.setTaskCfg(jdbcTemplate.queryForObject("select * from cpt_task_quartz where task_id = ?", new Object[] { taskId },
-					ParameterizedBeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
+					BeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
 
 		} catch (EmptyResultDataAccessException e) {
 		}
@@ -70,10 +70,10 @@ public class TaskDao {
 	public TaskEntity getTaskInfo(String taskId) {
 
 		TaskEntity task = jdbcTemplate.queryForObject("select * from cpt_task where task_id = ?", new Object[] { taskId },
-				ParameterizedBeanPropertyRowMapper.newInstance(TaskEntity.class));
+				BeanPropertyRowMapper.newInstance(TaskEntity.class));
 
 		task.setTaskCfg(jdbcTemplate.queryForObject("select * from cpt_task_quartz where task_id = ?", new Object[] { taskId },
-				ParameterizedBeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
+				BeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
 
 		return task;
 	}
@@ -85,12 +85,12 @@ public class TaskDao {
 	public List<TaskEntity> getAllTask() {
 
 		List<TaskEntity> result = jdbcTemplate.query("select * from cpt_task  order by task_id",
-				ParameterizedBeanPropertyRowMapper.newInstance(TaskEntity.class));
+				BeanPropertyRowMapper.newInstance(TaskEntity.class));
 
 		// 得到任务配置信息
 		for (TaskEntity task : result) {
 			task.setTaskCfg(jdbcTemplate.queryForObject("select * from cpt_task_quartz where task_id = ?",
-					new Object[] { task.getTaskId() }, ParameterizedBeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
+					new Object[] { task.getTaskId() }, BeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
 		}
 
 		return result;
@@ -102,12 +102,12 @@ public class TaskDao {
 	 */
 	public List<TaskEntity> getAllActiveTask() {
 		List<TaskEntity> result = jdbcTemplate.query("select * from cpt_task where del_flag=0 order by task_id",
-				ParameterizedBeanPropertyRowMapper.newInstance(TaskEntity.class));
+				BeanPropertyRowMapper.newInstance(TaskEntity.class));
 
 		// 得到任务配置信息
 		for (TaskEntity task : result) {
 			task.setTaskCfg(jdbcTemplate.queryForObject("select * from cpt_task_quartz where task_id = ?",
-					new Object[] { task.getTaskId() }, ParameterizedBeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
+					new Object[] { task.getTaskId() }, BeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
 		}
 
 		return result;
@@ -120,12 +120,12 @@ public class TaskDao {
 	public List<TaskEntity> getAllUnActiveTask() {
 
 		List<TaskEntity> result = jdbcTemplate.query("select * from cpt_task where del_flag=1 order by task_id",
-				ParameterizedBeanPropertyRowMapper.newInstance(TaskEntity.class));
+				BeanPropertyRowMapper.newInstance(TaskEntity.class));
 
 		// 得到任务配置信息
 		for (TaskEntity task : result) {
 			task.setTaskCfg(jdbcTemplate.queryForObject("select * from cpt_task_quartz where task_id = ?",
-					new Object[] { task.getTaskId() }, ParameterizedBeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
+					new Object[] { task.getTaskId() }, BeanPropertyRowMapper.newInstance(TaskCfgEntity.class)));
 		}
 
 		return result;
@@ -138,7 +138,7 @@ public class TaskDao {
 	public List<TaskEntity> getTimeOutTask() {
 		return jdbcTemplate
 				.query("select * from cpt_task where task_max_time is not null and status=1 and host_id is not null and (task_last_time + task_max_time/24/60/60) < sysdate",
-						ParameterizedBeanPropertyRowMapper.newInstance(TaskEntity.class));
+						BeanPropertyRowMapper.newInstance(TaskEntity.class));
 	}
 
 	/**

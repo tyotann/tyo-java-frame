@@ -95,7 +95,7 @@ public class ArchiveService extends CoreService {
 	 * </pre>
 	 */
 	public Long getArcsjmxino() {
-		return jdbcSupportService.getJdbcTemplate().queryForLong("select SEQ_ARCSJMX.nextVal from dual", new Object[0]);
+		return jdbcSupportService.getJdbcTemplate().queryForObject("select SEQ_ARCSJMX.nextVal from dual", new Object[0], java.lang.Long.class);
 	}
 
 	/**
