@@ -57,7 +57,7 @@ public class AsyncHttpClientPool {
      * @param body
      * @return
      */
-    private String post(String url, Map<String, String> paramMap, String body) {
+    public String post(String url, Map<String, String> paramMap, String body) {
 
         List<Param> params = null;
         if(paramMap != null && paramMap.size() > 0) {
