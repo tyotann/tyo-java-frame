@@ -14,7 +14,7 @@ public class ServletUtilsEx {
 	private static Log logger = LogFactory.getLog(ServletUtilsEx.class);
 
 	public static void renderJson(HttpServletResponse response, Object object) {
-		ServletUtilsEx.render(response, JSONUtilsEx.serialize(object), "text/plain;charset=UTF-8");
+		ServletUtilsEx.render(response, JSONUtilsEx.serialize(object), "application/json;charset=UTF-8");
 	}
 
 	/**
