@@ -6,7 +6,7 @@
 
 	<groupId>com.ihidea</groupId>
 	<artifactId>frame.core</artifactId>
-	<version>1.1.6</version>
+	<version>1.1.6.SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>ihdea-frame-j2ee-core</name>
 	<url>http://maven.apache.org</url>
@@ -410,7 +410,7 @@
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<compilerArguments>
 						<verbose />
-						<bootclasspath>${java.home}\lib\rt.jar;${java.home}\lib\jce.jar</bootclasspath>
+						<bootclasspath>${java.home}/lib/rt.jar:${java.home}/lib/jce.jar</bootclasspath>
 					</compilerArguments>
 				</configuration>
 			</plugin>
