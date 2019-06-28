@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,12 +42,12 @@ public class AsyncHttpClientPool {
                 new AsyncHttpClientConfig.Builder().setMaxConnections(maxConnections).setConnectTimeout(connectTimeout).setRequestTimeout(requestTimeout).build());
     }
 
-//    public static AsyncHttpClient getAsyncHttpClient() {
-//        if(asyncHttpClient == null) {
-//            throw new ServiceException("AsyncHttpClient连接池未初始化");
-//        }
-//        return asyncHttpClient;
-//    }
+    public static AsyncHttpClient getAsyncHttpClient() {
+        if(asyncHttpClient == null) {
+            throw new ServiceException("AsyncHttpClient连接池未初始化");
+        }
+        return asyncHttpClient;
+    }
 
 
     /**
@@ -58,7 +57,7 @@ public class AsyncHttpClientPool {
      * @param body
      * @return
      */
-    public String post(String url, Map<String, String> paramMap, String body) {
+    public String postSync(String url, Map<String, String> paramMap, String body) {
 
         List<Param> params = null;
         if(paramMap != null && paramMap.size() > 0) {
