@@ -2,12 +2,10 @@ package com.ihidea.core.util;
 
 
 import com.ihidea.core.support.exception.ServiceException;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.Param;
-import com.ning.http.client.Response;
+import com.ning.http.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -42,13 +40,32 @@ public class AsyncHttpClientPool {
                 new AsyncHttpClientConfig.Builder().setMaxConnections(maxConnections).setConnectTimeout(connectTimeout).setRequestTimeout(requestTimeout).build());
     }
 
-    public static AsyncHttpClient getAsyncHttpClient() {
-        if(asyncHttpClient == null) {
-            throw new ServiceException("AsyncHttpClient连接池未初始化");
+
+    private List<Param> paramMap2List(Map<String, String> paramMap) {
+        List<Param> params = null;
+        if(paramMap != null && paramMap.size() > 0) {
+            params = new ArrayList<>();
+            for(Map.Entry<String, String> entry : paramMap.entrySet()) {
+                params.add(new Param(entry.getKey(), entry.getValue()));
+            }
         }
-        return asyncHttpClient;
+        return params;
     }
 
+    private AsyncHttpClient.BoundRequestBuilder selectRequestBuilder(String url, HttpMethod method) {
+        switch (method) {
+            case GET:
+                return asyncHttpClient.prepareGet(url);
+            case POST:
+                return asyncHttpClient.preparePost(url);
+            case PUT:
+                return asyncHttpClient.preparePut(url);
+            case DELETE:
+                return asyncHttpClient.prepareDelete(url);
+            default:
+                throw new ServiceException("不支持的request类型");
+        }
+    }
 
     /**
      * post请求
@@ -57,15 +74,9 @@ public class AsyncHttpClientPool {
      * @param body
      * @return
      */
-    public String postSync(String url, Map<String, String> paramMap, String body) {
+    public String requestSync(String url, Map<String, String> paramMap, String body, HttpMethod method) {
 
-        List<Param> params = null;
-        if(paramMap != null && paramMap.size() > 0) {
-            params = new ArrayList<>();
-            for(Map.Entry<String, String> entry : paramMap.entrySet()) {
-                params.add(new Param(entry.getKey(), entry.getValue()));
-            }
-        }
+        List<Param> params = paramMap2List(paramMap);
 
         String result = null;
 
@@ -74,10 +85,10 @@ public class AsyncHttpClientPool {
 
             Response response = null;
             if(params != null) {
-                response = asyncHttpClient.preparePost(url).addHeader("Content-Type", "application/json;charset=utf-8")
+                response = selectRequestBuilder(url, method).addHeader("Content-Type", "application/json;charset=utf-8")
                         .addQueryParams(params).execute().get();
             } else {
-                response = asyncHttpClient.preparePost(url).addHeader("Content-Type", "application/json;charset=utf-8")
+                response = selectRequestBuilder(url, method).addHeader("Content-Type", "application/json;charset=utf-8")
                         .setBody(body).execute().get();
             }
 
@@ -95,6 +106,28 @@ public class AsyncHttpClientPool {
         }
 
         return result;
+    }
+
+
+    public void requestAsync(String url, Map<String, String> paramMap, String body, AsyncCompletionHandler<Response> handler, HttpMethod method) {
+
+        List<Param> params = paramMap2List(paramMap);
+
+        try {
+            logger.debug("[AsyncHttpClient]访问地址:{},参数:{},body:{}", new Object[]{url, JSONUtilsEx.serialize(paramMap), body});
+
+            Response response = null;
+            if(params != null) {
+                selectRequestBuilder(url, method).addHeader("Content-Type", "application/json;charset=utf-8")
+                        .addQueryParams(params).execute(handler);
+            } else {
+                selectRequestBuilder(url, method).addHeader("Content-Type", "application/json;charset=utf-8")
+                        .setBody(body).execute(handler);
+            }
+        } catch (Exception e) {
+            logger.error("[AsyncHttpClient]请求出现异常:" + e.getMessage(), e);
+        }
+
     }
 
 
