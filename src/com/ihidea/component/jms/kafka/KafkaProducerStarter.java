@@ -17,7 +17,7 @@ public class KafkaProducerStarter {
      * 初始化producer
      * @param brokerAddress
      */
-    public void init(String brokerAddress) {
+    public static void init(String brokerAddress) {
         Properties props = new Properties();
         //设置接入点，请通过控制台获取对应 Topic 的接入点
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddress);
