@@ -69,4 +69,28 @@ public class KafkaProducerStarter {
         });
     }
 
+    /**
+     * 发送顺序消息
+     * @param key
+     * @param topic
+     * @param message
+     */
+    public static void send(final String key, final String topic, final String message) {
+        if(producer == null) {
+            throw new ServiceException("kafka producer还未初始化，请先执行init方法初始化!");
+        }
+        ProducerRecord<String, String> kafkaMessage =  new ProducerRecord<String, String>(topic, key, message);
+        //使用带回调通知的发送API
+        producer.send(kafkaMessage, new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+                if(e == null) {
+                    logger.debug("[KAFKA]-发送成功:{}", new Object[]{recordMetadata.toString()});
+                } else {
+                    logger.error("[KAFKA]-发送失败, topic:{}, message:{}", new Object[]{topic, message}, e);
+                }
+            }
+        });
+    }
+
 }
