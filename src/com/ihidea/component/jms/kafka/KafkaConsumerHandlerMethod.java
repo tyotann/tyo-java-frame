@@ -9,11 +9,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface KafkaConsumerMethod {
+public @interface KafkaConsumerHandlerMethod {
 
-    String topicName() default StringUtils.EMPTY;
-
-    // 对应的应用名,默认为当前方法名.函数名
-    String methodName() default StringUtils.EMPTY;
+    String topic() default StringUtils.EMPTY;
 
 }
