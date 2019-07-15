@@ -107,9 +107,9 @@ public class KafkaConsumerStarter {
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        //循环消费消息
-                        while (true) {
-                            try {
+                        try {
+                            //循环消费消息
+                            while (true) {
                                 ConsumerRecords<String, String> records = consumer.poll(1000);
                                 //必须在下次 poll 之前消费完这些数据, 且总耗时不得超过 SESSION_TIMEOUT_MS_CONFIG 的值
                                 //建议开一个单独的线程池来消费消息，然后异步返回结果
@@ -133,8 +133,14 @@ public class KafkaConsumerStarter {
                                     }
                                 }
                                 consumer.commitAsync();
-                            } catch (Exception e) {
-                                logger.error("[Kafka]消费异常:", e);
+                            }
+                        } catch (Exception e) {
+                            logger.error("[Kafka]位移提交异常:", e);
+                        } finally {
+                            try {
+                                consumer.commitSync(); // 最后一次提交使用同步阻塞式提交
+                            } finally {
+                                consumer.close();
                             }
                         }
                     }
