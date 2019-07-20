@@ -1,21 +1,15 @@
 package com.ihidea.component.jms.kafka;
 
-import com.dianping.cat.Cat;
 import com.ihidea.core.support.SpringContextLoader;
 import com.ihidea.core.support.exception.ServiceException;
 import com.ihidea.core.util.ClassUtilsEx;
-import com.ihidea.core.util.JSONUtilsEx;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
