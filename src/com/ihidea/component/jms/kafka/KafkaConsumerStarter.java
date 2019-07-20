@@ -19,12 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class KafkaConsumerStarter {
 
     private final static Logger logger = LoggerFactory.getLogger(KafkaConsumerStarter.class);
 
-    private static Map<String, Method> consumerMethodMap = new HashMap<String, Method>();
+    protected static Map<String, Method> consumerMethodMap = new ConcurrentHashMap<String, Method>();
 
     private synchronized static void initConsumerMethod() throws Exception{
 
@@ -63,7 +64,10 @@ public class KafkaConsumerStarter {
      * @param consumerGroupName     consumerGroupName
      * @param sessionTimeOutMs      session超时时间，默认30s
      * @param maxPollRecords        每次拉取消息条数，默认30条，请务必确保30秒内30条一定能消费完，否则会触发kafka broker rebalance，引发性能问题
-     * @param consumerThreadNum     consumer实例个数，既consumer线程数，默认为8，建议不要修改。一个consumer对于一个或多个分区，阿里云默认一个topic创建24个分区
+     * @param consumerThreadNum     consumer实例个数，既consumer线程数，默认为8。一个consumer对于一个或多个分区，阿里云默认一个topic创建24个分区。
+     *                              如某个项目订阅了2个topic，即总共是48个分区，项目会部署3个实例，此时每个实例的consumer的线程数最大设置为48/3=16,大于16个则会出现空闲线程（分配不到分区，没有消息可消费）
+     *                              再比如某个项目订阅了10个topic，级一共是240个分区，项目会部署2个实例，此时每个实例的consumer的线程数最大设置为240/2=120,
+     *                              但是120个线程显然占用了太多系统资源，此时可以适当减小线程数，比如设置为20，即20*2=40个consumer实例均分240个分区，每个consumer分配6个分区
      */
     public static void init(String brokerAddress, String consumerGroupName, int sessionTimeOutMs, int maxPollRecords, int consumerThreadNum) throws Exception {
 
@@ -104,47 +108,7 @@ public class KafkaConsumerStarter {
                 //设置  Consumer Group 订阅的 Topic，可订阅多个 Topic。如果 GROUP_ID_CONFIG 相同，那建议订阅的 Topic 设置也相同
                 consumer.subscribe(consumerMethodMap.keySet());
 
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            //循环消费消息
-                            while (true) {
-                                ConsumerRecords<String, String> records = consumer.poll(1000);
-                                //必须在下次 poll 之前消费完这些数据, 且总耗时不得超过 SESSION_TIMEOUT_MS_CONFIG 的值
-                                //建议开一个单独的线程池来消费消息，然后异步返回结果
-                                for (ConsumerRecord<String, String> record : records) {
-                                    try {
-                                        String topicName = record.topic();
-                                        Method method = consumerMethodMap.get(topicName);
-                                        if (method != null) {
-                                            Map<String, Object> paramMap = new HashMap<String, Object>();
-                                            paramMap.put("record", record);
-                                            ClassUtilsEx.invokeMethod(method.getDeclaringClass().getSimpleName(), method.getName(), paramMap);
-                                        } else {
-                                            logger.error("[Kafka]处理消息发生异常: topic未找到相应的处理方法" + ",topic=" + topicName);
-                                        }
-                                    } catch (InvocationTargetException e) {
-                                        Throwable targetException = e.getTargetException();
-                                        Cat.logError(targetException);
-                                        logger.error("[Kafka]处理消息发生异常:" + targetException.getMessage() + ",消息报文:" + JSONUtilsEx.serialize(record), targetException);
-                                    } catch (Exception e) {
-                                        logger.error("[Kafka]处理消息发生异常:" + e.getMessage() + ",消息报文:" + JSONUtilsEx.serialize(record), e);
-                                    }
-                                }
-                                consumer.commitAsync();
-                            }
-                        } catch (Exception e) {
-                            logger.error("[Kafka]位移提交异常:", e);
-                        } finally {
-                            try {
-                                consumer.commitSync(); // 最后一次提交使用同步阻塞式提交
-                            } finally {
-                                consumer.close();
-                            }
-                        }
-                    }
-                };
+                Runnable runnable = new KafkaConsumerRunner(consumer);
 
                 new Thread(runnable, "kafka-consumer-thread-" + i).start();
             }
