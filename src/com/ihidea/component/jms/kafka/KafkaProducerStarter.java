@@ -33,7 +33,7 @@ public class KafkaProducerStarter {
         //重试次数
         props.put(ProducerConfig.RETRIES_CONFIG, "10");
         //设置压缩算法
-        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "LZ4");
+        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "gzip");
         //当同时有大量消息要向同一个分区发送时，Producer端会将消息打包后进行批量发送。如果设置为0，则每条消息都独立发送。默认为16384字节
         props.put(ProducerConfig.BATCH_SIZE_CONFIG, "16384");
         //发送消息前等待的毫秒数，与batch.size配合使用。在消息负载不高的情况下，配置linger.ms能够让Producer在发送消息前等待一定时间，以积累更多的消息打包发送，达到节省网络资源的目的。默认为0
