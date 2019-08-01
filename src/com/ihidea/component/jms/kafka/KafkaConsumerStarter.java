@@ -58,10 +58,8 @@ public class KafkaConsumerStarter {
      * @param consumerGroupName     consumerGroupName
      * @param sessionTimeOutMs      session超时时间，默认30s
      * @param maxPollRecords        每次拉取消息条数，默认30条，请务必确保30秒内30条一定能消费完，否则会触发kafka broker rebalance，引发性能问题
-     * @param consumerThreadNum     consumer实例个数，既consumer线程数，默认为8。一个consumer对于一个或多个分区，阿里云默认一个topic创建24个分区。
-     *                              如某个项目订阅了2个topic，即总共是48个分区，项目会部署3个实例，此时每个实例的consumer的线程数最大设置为48/3=16,大于16个则会出现空闲线程（分配不到分区，没有消息可消费）
-     *                              再比如某个项目订阅了10个topic，级一共是240个分区，项目会部署2个实例，此时每个实例的consumer的线程数最大设置为240/2=120,
-     *                              但是120个线程显然占用了太多系统资源，此时可以适当减小线程数，比如设置为20，即20*2=40个consumer实例均分240个分区，每个consumer分配6个分区
+     * @param consumerThreadNum     consumer实例个数，既consumer线程数，默认为8。一个consumer对于一个或多个分区，阿里云默认一个topic创建的分区数为6的倍数。
+     *                              因此consumerThreadNum建议也设置为6的倍数，但最好不要超过24。
      */
     public static void init(String brokerAddress, String consumerGroupName, int sessionTimeOutMs, int maxPollRecords, int consumerThreadNum) throws Exception {
 
@@ -77,7 +75,7 @@ public class KafkaConsumerStarter {
                 maxPollRecords = 30;
             }
             if (consumerThreadNum <= 0) {
-                consumerThreadNum = 8;
+                consumerThreadNum = 6;
             }
             Properties props = new Properties();
             //设置接入点，请通过控制台获取对应 Topic 的接入点
