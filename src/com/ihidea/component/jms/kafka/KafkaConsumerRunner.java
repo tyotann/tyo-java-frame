@@ -32,24 +32,16 @@ public class KafkaConsumerRunner implements Runnable {
 
     public void afterConsume(){}
 
-    public void consume(ConsumerRecords<String, String> records){
+    public void consume(ConsumerRecords<String, String> records) throws Exception{
         for (ConsumerRecord<String, String> record : records) {
-            try {
-                String topicName = record.topic();
-                Method method = KafkaConsumerStarter.consumerMethodMap.get(topicName);
-                if (method != null) {
-                    Map<String, Object> paramMap = new HashMap<String, Object>();
-                    paramMap.put("record", record);
-                    ClassUtilsEx.invokeMethod(method.getDeclaringClass().getSimpleName(), method.getName(), paramMap);
-                } else {
-                    logger.error("[Kafka]处理消息发生异常: topic未找到相应的处理方法" + ",topic=" + topicName);
-                }
-            } catch (InvocationTargetException e) {
-                Throwable targetException = e.getTargetException();
-                Cat.logError(targetException);
-                logger.error("[Kafka]处理消息发生异常:" + targetException.getMessage() + ",消息报文:" + JSONUtilsEx.serialize(record), targetException);
-            } catch (Exception e) {
-                logger.error("[Kafka]处理消息发生异常:" + e.getMessage() + ",消息报文:" + JSONUtilsEx.serialize(record), e);
+            String topicName = record.topic();
+            Method method = KafkaConsumerStarter.consumerMethodMap.get(topicName);
+            if (method != null) {
+                Map<String, Object> paramMap = new HashMap<String, Object>();
+                paramMap.put("record", record);
+                ClassUtilsEx.invokeMethod(method.getDeclaringClass().getSimpleName(), method.getName(), paramMap);
+            } else {
+                logger.error("[Kafka]处理消息发生异常: topic未找到相应的处理方法" + ",topic=" + topicName);
             }
         }
     }
@@ -57,16 +49,26 @@ public class KafkaConsumerRunner implements Runnable {
     public void run() {
         try {
             while (!closed.get()) {
-                //必须在下次 poll 之前消费完这些数据, 且总耗时不得超过 SESSION_TIMEOUT_MS_CONFIG 的值
-                ConsumerRecords<String, String> records = consumer.poll(1000);
+                // 外层try catch保证循环不会异常退出
+                try {
+                    //必须在下次 poll 之前消费完这些数据, 且总耗时不得超过 SESSION_TIMEOUT_MS_CONFIG 的值
+                    ConsumerRecords<String, String> records = consumer.poll(1000);
 
-                preConsume();
+                    preConsume();
 
-                consume(records);
+                    // 内层不try catch，如果消费异常，不提交消费位点，以便重新消费
+                    consume(records);
 
-                afterConsume();
+                    afterConsume();
 
-                consumer.commitAsync();
+                    consumer.commitAsync();
+                } catch (InvocationTargetException e) {
+                    Throwable targetException = e.getTargetException();
+                    Cat.logError(targetException);
+                    logger.error("[Kafka]处理消息发生异常:" + targetException.getMessage(), targetException);
+                } catch (Exception e) {
+                    logger.error("[Kafka]处理消息发生异常:" + e.getMessage(), e);
+                }
             }
         } catch (WakeupException e) {
             // Ignore exception if closing
