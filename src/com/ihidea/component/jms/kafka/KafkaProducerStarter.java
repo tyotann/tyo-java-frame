@@ -69,6 +69,7 @@ public class KafkaProducerStarter {
         });
     }
 
+
     /**
      * 发送顺序消息
      * @param key
@@ -91,6 +92,36 @@ public class KafkaProducerStarter {
                 }
             }
         });
+    }
+
+
+    /**
+     * 发送消息,自定义回调处理
+     * @param topic
+     * @param message
+     */
+    public static void sendWithCallBack(final String topic, final String message, final Callback callback) {
+        if(producer == null) {
+            throw new ServiceException("kafka producer还未初始化，请先执行init方法初始化!");
+        }
+        ProducerRecord<String, String> kafkaMessage =  new ProducerRecord<String, String>(topic, message);
+        //使用带回调通知的发送API
+        producer.send(kafkaMessage, callback);
+    }
+
+    /**
+     * 发送顺序消息
+     * @param key
+     * @param topic
+     * @param message
+     */
+    public static void sendWithCallBack(final String key, final String topic, final String message, final Callback callback) {
+        if(producer == null) {
+            throw new ServiceException("kafka producer还未初始化，请先执行init方法初始化!");
+        }
+        ProducerRecord<String, String> kafkaMessage =  new ProducerRecord<String, String>(topic, key, message);
+        //使用带回调通知的发送API
+        producer.send(kafkaMessage, callback);
     }
 
 }
