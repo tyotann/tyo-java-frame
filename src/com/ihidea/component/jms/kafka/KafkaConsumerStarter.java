@@ -21,6 +21,8 @@ public class KafkaConsumerStarter {
 
     protected static Map<String, Method> consumerMethodMap = new ConcurrentHashMap<String, Method>();
 
+    private static KafkaConsumerRunner[] runnables;
+
     private synchronized static void initConsumerMethod() throws Exception{
 
         if(consumerMethodMap.isEmpty()) {
@@ -77,6 +79,8 @@ public class KafkaConsumerStarter {
             if (consumerThreadNum <= 0) {
                 consumerThreadNum = 6;
             }
+            runnables = new KafkaConsumerRunner[consumerThreadNum];
+
             Properties props = new Properties();
             //设置接入点，请通过控制台获取对应 Topic 的接入点
             props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddress);
@@ -100,12 +104,23 @@ public class KafkaConsumerStarter {
                 //设置  Consumer Group 订阅的 Topic，可订阅多个 Topic。如果 GROUP_ID_CONFIG 相同，那建议订阅的 Topic 设置也相同
                 consumer.subscribe(consumerMethodMap.keySet());
 
-                Runnable runnable = new KafkaConsumerRunner(consumer);
+                KafkaConsumerRunner runnable = new KafkaConsumerRunner(consumer);
+
+                runnables[i] = runnable;
 
                 new Thread(runnable, "kafka-consumer-thread-" + i).start();
             }
         }
     }
+
+    public static synchronized void destroy() {
+        if(runnables != null) {
+            for (KafkaConsumerRunner runnable : runnables) {
+                runnable.shutdown();
+            }
+        }
+    }
+
 
 
 }
