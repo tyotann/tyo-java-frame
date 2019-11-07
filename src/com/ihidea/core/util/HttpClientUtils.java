@@ -376,8 +376,66 @@ public class HttpClientUtils {
 		return responseStr;
 	}
 
+
+	/**
+	 * Post方式提交,URL中不包含提交参数, 格式：http://www.g.cn
+	 *
+	 * @param url
+	 *            提交地址
+	 * @param params
+	 *            提交参数集, 键/值对
+	 * @param requestCharset
+	 *            参数提交编码集
+	 * @return 响应消息 byte[]
+	 */
+	public static byte[] post(String url, Map<String, String> params, String requestCharset, Header... headers) {
+		if (url == null || StringUtils.isEmpty(url)) {
+			return null;
+		}
+		// 创建HttpClient实例
+		DefaultHttpClient httpclient = getHttpClient(requestCharset, url.indexOf("https") == 0);
+		UrlEncodedFormEntity formEntity = null;
+		try {
+			if (requestCharset == null || StringUtils.isEmpty(requestCharset)) {
+				formEntity = new UrlEncodedFormEntity(getParamsList(params));
+			} else {
+				formEntity = new UrlEncodedFormEntity(getParamsList(params), requestCharset);
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException("不支持的编码集", e);
+		}
+		HttpPost hp = new HttpPost(url);
+		hp.setEntity(formEntity);
+		if (headers != null && headers.length > 0) {
+			for (Header header : headers) {
+				if (hp.getFirstHeader(header.getName()) != null) {
+					hp.setHeader(header);
+				} else {
+					hp.addHeader(header);
+				}
+			}
+		}
+
+		hp.getAllHeaders();
+
+		// 发送请求，得到响应
+		byte[] responseByte = null;
+		try {
+			responseByte = httpclient.execute(hp, responseHandler);
+		} catch (ClientProtocolException e) {
+			logger.error(e.getMessage(), e);
+			throw new RuntimeException("客户端连接协议错误", e);
+		} catch (IOException e) {
+			throw new RuntimeException("IO操作异常,查看是否超过请求设定时间:" + TIMEOUT + "毫秒!", e);
+		} finally {
+			abortConnection(hp, httpclient);
+		}
+		return responseByte;
+	}
+
+
 	public static String post(String url, Map<String, String> params, String requestCharset) {
-		return post(url, params, requestCharset, null);
+		return post(url, params, requestCharset, null,null);
 	}
 
 	public static String post(String url) {
@@ -385,7 +443,7 @@ public class HttpClientUtils {
 	}
 
 	public static String post(String url, Map<String, String> params) {
-		return post(url, params, null, null);
+		return post(url, params, null, null,null);
 	}
 
 	/**
@@ -456,7 +514,6 @@ public class HttpClientUtils {
 	 * @param truststorePassword
 	 *            信任存储库访问密码, 可为null
 	 * @return 响应消息
-	 * @throws NetServiceException
 	 */
 	public static String post(String url, Map<String, String> params, String charset, final URL keystoreUrl, final String keystorePassword,
 			final URL truststoreUrl, final String truststorePassword, String responseCharset) {
@@ -506,16 +563,7 @@ public class HttpClientUtils {
 	 *            提交参数集, 键/值对
 	 * @param charset
 	 *            参数编码集
-	 * @param keystoreUrl
-	 *            密钥存储库路径
-	 * @param keystorePassword
-	 *            密钥存储库访问密码
-	 * @param truststoreUrl
-	 *            信任存储库绝路径
-	 * @param truststorePassword
-	 *            信任存储库访问密码, 可为null
 	 * @return 响应消息
-	 * @throws NetServiceException
 	 */
 	public static String upload(String url, Map<String, Object> params, String charset, String responseCharset) {
 
