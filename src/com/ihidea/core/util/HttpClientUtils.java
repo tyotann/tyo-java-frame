@@ -496,6 +496,50 @@ public class HttpClientUtils {
 		return responseStr;
 	}
 
+
+	/**
+	 * 返回byte数组
+	 * @param url
+	 * @param body
+	 * @param charset
+	 * @param headers
+	 * @return
+	 */
+	public static byte[] post(String url, final String body, final String charset, Header... headers) {
+		if (url == null || StringUtils.isEmpty(url)) {
+			return null;
+		}
+		// 创建HttpClient实例
+		DefaultHttpClient httpclient = getHttpClient(charset, url.indexOf("https") == 0);
+
+		StringEntity entity = new StringEntity(body, charset);
+
+		HttpPost hp = new HttpPost(url);
+		hp.setEntity(entity);
+		if (headers != null && headers.length > 0) {
+			for (Header header : headers) {
+				if (hp.getFirstHeader(header.getName()) != null) {
+					hp.setHeader(header);
+				} else {
+					hp.addHeader(header);
+				}
+			}
+		}
+
+		// 发送请求，得到响应
+		byte[] responseByte = null;
+		try {
+			responseByte = httpclient.execute(hp, responseHandler);
+		} catch (ClientProtocolException e) {
+			throw new RuntimeException("客户端连接协议错误", e);
+		} catch (IOException e) {
+			throw new RuntimeException("IO操作异常", e);
+		} finally {
+			abortConnection(hp, httpclient);
+		}
+		return responseByte;
+	}
+
 	/**
 	 * Post方式提交,忽略URL中包含的参数,解决SSL双向数字证书认证
 	 * 
