@@ -74,10 +74,10 @@ mobile.notify.ios.production=true
 push.channel=aliPush,jpush_android,jpush_iOS
 
 #aliPush
-push.aliPush.appkey=24453402
-push.aliPush.accessKeyId=IWg0bNKL6dDrswgh
-push.aliPush.accessKeySecret=DbZhDxLD373f2dy6Vv7FbPdaoiyClW
-push.aliPush.region=cn-hangzhou
+push.aliPush.appkey=
+push.aliPush.accessKeyId=
+push.aliPush.accessKeySecret=
+push.aliPush.region=
 
 #消息类型 MESSAGE NOTICE
 push.aliPush.pushType=NOTICE
