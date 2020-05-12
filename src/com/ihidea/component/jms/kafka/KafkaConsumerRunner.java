@@ -39,7 +39,14 @@ public class KafkaConsumerRunner implements Runnable {
             if (method != null) {
                 Map<String, Object> paramMap = new HashMap<String, Object>();
                 paramMap.put("record", record);
-                ClassUtilsEx.invokeMethod(method.getDeclaringClass().getSimpleName(), method.getName(), paramMap);
+                // 内层也需要try catch，如果消费异常，不提交消费位点，下次拉取依然无法重复消费
+                //如需重复消费 可使用 guava-retry  spring-retry.
+                try {
+                    ClassUtilsEx.invokeMethod(method.getDeclaringClass().getSimpleName(), method.getName(), paramMap);
+                }catch (Exception e){
+                    logger.error("[Kafka]处理消息发生异常:" + e.getMessage(), e);
+                }
+
             } else {
                 logger.error("[Kafka]处理消息发生异常: topic未找到相应的处理方法" + ",topic=" + topicName);
             }
@@ -56,7 +63,8 @@ public class KafkaConsumerRunner implements Runnable {
 
                     preConsume();
 
-                    // 内层不try catch，如果消费异常，不提交消费位点，以便重新消费
+                    // 内层也需要try catch，如果消费异常，不提交消费位点，下次拉取依然无法重复消费
+                    //如需重复消费 可使用 guava-retry  spring-retry.
                     consume(records);
 
                     afterConsume();
@@ -69,6 +77,7 @@ public class KafkaConsumerRunner implements Runnable {
                 } catch (Exception e) {
                     logger.error("[Kafka]处理消息发生异常:" + e.getMessage(), e);
                 }
+
             }
         } catch (WakeupException e) {
             // Ignore exception if closing
