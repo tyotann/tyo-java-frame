@@ -1,3 +1,14 @@
+简介
+java-frame 是 星星充电 <万帮充电设备有限公司> 内部大规模使用的java框架。
+是一个小而全的Java工具类，封装了很多很多小工具，便于快发开发业务代码实现需求，标准化输入和输出的参数格式。
+在多年的使用中已经变得越来越完善，基本涵盖了日常Java开发需要的工具包，让你可以专注于业务代码。
+
+安装
+git clone https://github.com/tyotann/java-frame
+mvn build   -->idea maven 视图Lifecycle -> 双击compile
+mvn install/mvn package  -->idea maven 视图Lifecycle -> 双击 install / package
+
+
 ##################################################国际化支持###########################################################
 
 1.Application.java中增加过滤器，这样在api访问的url中带入参数locale=en之类
